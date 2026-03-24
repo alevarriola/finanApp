@@ -17,7 +17,6 @@ export interface Category {
   id: string;
   name: string;
   categoryKind: CategoryKind;
-  icon: string;
   color: string;
   isGlobal: boolean;
 }

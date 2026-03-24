@@ -18,7 +18,6 @@ class CategoryMutations:
         category = await service.create_category(
             name=input.name,
             category_kind=input.category_kind,
-            icon=input.icon,
             color=input.color,
         )
         return CategoryType.from_model(category)

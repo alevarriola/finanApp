@@ -14,8 +14,6 @@ class Category(BaseModel, HasCreatedAt, kw_only=True):
 
     name: Mapped[str] = mapped_column(String(100))
     category_kind: Mapped[CategoryKind] = mapped_column(IntEnumType(CategoryKind))
-
-    icon: Mapped[str] = mapped_column(String(10), default="📁")
     color: Mapped[str] = mapped_column(String(7), default="#94a3b8")
     user_id: Mapped[uuid.UUID | None] = mapped_column(
         PG_UUID(as_uuid=True),

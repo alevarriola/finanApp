@@ -20,9 +20,3 @@ export const WALLET_KIND_LABELS: Record<WalletKind, string> = {
   CREDIT: "Credit Card",
 };
 
-export const WALLET_KIND_ICONS: Record<WalletKind, string> = {
-  CASH: "💵",
-  BANK: "🏦",
-  DEBIT: "💳",
-  CREDIT: "💳",
-};

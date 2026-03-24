@@ -16,13 +16,11 @@ class CategoryService:
         self,
         name: str,
         category_kind: CategoryKind,
-        icon: str = "📁",
         color: str = "#94a3b8",
     ) -> Category:
         category = Category(
             name=name,
             category_kind=category_kind,
-            icon=icon,
             color=color,
             user_id=self.auth_info.user_id,
         )

@@ -135,7 +135,7 @@ export function TransactionFormModal({
                 <option value="">No category</option>
                 {filteredCategories.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.icon} {c.name}
+                    {c.name}
                   </option>
                 ))}
               </select>

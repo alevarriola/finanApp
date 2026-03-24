@@ -11,7 +11,6 @@ class CategoryType:
     id: uuid.UUID
     name: str
     category_kind: CategoryKind
-    icon: str
     color: str
     is_global: bool
 
@@ -21,7 +20,6 @@ class CategoryType:
             id=uuid.UUID(str(model.id)),
             name=model.name,
             category_kind=model.category_kind,
-            icon=model.icon,
             color=model.color,
             is_global=model.user_id is None,
         )
@@ -31,5 +29,4 @@ class CategoryType:
 class CreateCategoryInput:
     name: str
     category_kind: CategoryKind
-    icon: str = "📁"
     color: str = "#94a3b8"

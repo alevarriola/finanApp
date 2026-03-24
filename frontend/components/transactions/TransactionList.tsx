@@ -56,16 +56,17 @@ export function TransactionList({
                   className="flex items-center gap-3 px-4 py-3 hover:opacity-80 transition-opacity"
                   style={{ backgroundColor: "var(--card)" }}
                 >
-                  <span className="text-xl w-8 text-center">
-                    {category?.icon ?? (isIncome ? "💰" : "💸")}
-                  </span>
+                  <div
+                    className="w-2 h-8 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: category?.color ?? (isIncome ? "#16a34a" : "#dc2626") }}
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate" style={{ color: "var(--foreground)" }}>
                       {txn.description ?? category?.name ?? (isIncome ? "Income" : "Expense")}
                     </p>
                     {category && txn.description && (
                       <p className="text-xs opacity-50 truncate" style={{ color: "var(--foreground)" }}>
-                        {category.icon} {category.name}
+                        {category.name}
                       </p>
                     )}
                   </div>

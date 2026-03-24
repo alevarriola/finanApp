@@ -42,7 +42,6 @@ async def test_list_categories_includes_own_custom(category_service, auth_info):
     await category_service.create_category(
         name="My custom",
         category_kind=CategoryKind.EXPENSE,
-        icon="💸",
         color="#ff0000",
     )
 
@@ -75,20 +74,17 @@ async def test_create_category_defaults(category_service, auth_info):
 
     assert cat.name == "Side income"
     assert cat.category_kind == CategoryKind.INCOME
-    assert cat.icon == "📁"
     assert cat.color == "#94a3b8"
     assert cat.user_id == auth_info.user_id
 
 
-async def test_create_category_custom_icon_color(category_service, auth_info):
+async def test_create_category_custom_color(category_service, auth_info):
     cat = await category_service.create_category(
         name="Transport",
         category_kind=CategoryKind.EXPENSE,
-        icon="🚗",
         color="#3b82f6",
     )
 
-    assert cat.icon == "🚗"
     assert cat.color == "#3b82f6"
     assert cat.user_id == auth_info.user_id
 

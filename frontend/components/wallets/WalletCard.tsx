@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Wallet, WALLET_KIND_ICONS, WALLET_KIND_LABELS } from "./types";
+import { Wallet, WALLET_KIND_LABELS } from "./types";
 
 interface WalletCardProps {
   wallet: Wallet;
@@ -26,7 +26,6 @@ export function WalletCard({ wallet, onEdit, onArchive }: WalletCardProps) {
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-2xl">{WALLET_KIND_ICONS[wallet.walletKind]}</span>
           <div>
             <p className="font-semibold text-sm leading-tight" style={{ color: "var(--foreground)" }}>
               {wallet.name}

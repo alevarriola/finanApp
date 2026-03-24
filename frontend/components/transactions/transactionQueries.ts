@@ -19,7 +19,6 @@ export const CATEGORIES_QUERY = `
       id
       name
       categoryKind
-      icon
       color
       isGlobal
     }
