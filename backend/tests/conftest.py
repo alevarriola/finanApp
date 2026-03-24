@@ -8,10 +8,12 @@ from app.db.base import Base
 from app.graphql.users.models.user import User
 from app.graphql.users.repositories.user_repository import UserRepository
 from app.graphql.users.services.user_service import UserService
+from app.graphql.categories.models.category import Category
+from app.graphql.transactions.models.transaction import Transaction
 from app.graphql.wallets.models.wallet import Wallet
 from app.graphql.wallets.models.wallet_member import WalletMember
 
-_ = (User, Wallet, WalletMember)
+_ = (User, Wallet, WalletMember, Category, Transaction)
 
 _settings = get_settings()
 TEST_DB_URL = _settings.database_url.rsplit("/", 1)[0] + "/finanapp_test"
