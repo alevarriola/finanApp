@@ -29,7 +29,6 @@ class Wallet(BaseModel, HasCreatedAt, HasUpdatedAt, kw_only=True):
 
     members: Mapped[list["WalletMember"]] = relationship(  # type: ignore[name-defined]
         "WalletMember",
-        back_populates="wallet",
         cascade="all, delete-orphan",
         default_factory=list,
         init=False,

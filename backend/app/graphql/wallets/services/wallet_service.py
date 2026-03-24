@@ -28,16 +28,18 @@ class WalletService:
             initial_balance=initial_balance,
             owner_id=self.auth_info.user_id,
         )
-        wallet = await self.repository.create(wallet)
+        wallet_id = wallet.id
+        await self.repository.create(wallet)
 
         member = WalletMember(
-            wallet_id=wallet.id,
+            wallet_id=wallet_id,
             user_id=self.auth_info.user_id,
             role=WalletRole.OWNER,
         )
         await self.repository.add_member(member)
+        self.repository.session.expire(wallet)
 
-        wallet = await self.repository.get_by_id(wallet.id)
+        wallet = await self.repository.get_by_id(wallet_id)
         return wallet  # type: ignore[return-value]
 
     async def get_user_wallets(self) -> list[Wallet]:
