@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Wallet, WALLET_KIND_ICONS, WALLET_KIND_LABELS } from "./types";
 
 interface WalletCardProps {
@@ -20,7 +21,7 @@ export function WalletCard({ wallet, onEdit, onArchive }: WalletCardProps) {
 
   return (
     <div
-      className="rounded-xl border p-5 flex flex-col gap-3 hover:shadow-sm transition-shadow"
+      className="rounded-xl border p-5 flex flex-col gap-3 hover:shadow-sm transition-shadow cursor-pointer"
       style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
     >
       <div className="flex items-start justify-between">
@@ -60,14 +61,14 @@ export function WalletCard({ wallet, onEdit, onArchive }: WalletCardProps) {
         )}
       </div>
 
-      <div>
+      <Link href={`/wallets/${wallet.id}`} className="block">
         <p className="text-xs opacity-50 mb-0.5" style={{ color: "var(--foreground)" }}>
           Balance
         </p>
         <p className="text-xl font-bold" style={{ color: "var(--primary)" }}>
           {formattedBalance}
         </p>
-      </div>
+      </Link>
 
       <div className="flex items-center justify-between">
         <span
