@@ -50,6 +50,7 @@ export default async function DashboardLayout({
             { href: "/dashboard", label: "Dashboard" },
             { href: "/wallets", label: "Wallets" },
             { href: "/transactions", label: "Transactions" },
+            { href: "/sharing", label: "Sharing" },
             { href: "/settings", label: "Settings" },
           ].map((item) => (
             <Link

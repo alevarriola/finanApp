@@ -64,6 +64,12 @@ class WalletRepository:
         await self.session.flush()
         return member
 
+    async def remove_member(self, wallet_id: uuid.UUID, user_id: uuid.UUID) -> None:
+        member = await self.get_member(wallet_id, user_id)
+        if member:
+            await self.session.delete(member)
+            await self.session.flush()
+
     async def save(self, wallet: Wallet) -> Wallet:
         await self.session.flush()
         return wallet

@@ -46,3 +46,9 @@ export const ARCHIVE_WALLET_MUTATION = `
     }
   }
 `;
+
+export const LEAVE_WALLET_MUTATION = `
+  mutation LeaveWallet($walletId: UUID!) {
+    leaveWallet(walletId: $walletId)
+  }
+`;

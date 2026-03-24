@@ -57,6 +57,21 @@ class WalletMutations:
 
     @strawberry.mutation
     @inject
+    async def leave_wallet(
+        self,
+        wallet_id: uuid.UUID,
+        wallet_service: Injected[WalletService],
+    ) -> bool:
+        try:
+            await wallet_service.leave_wallet(wallet_id)
+        except NotFoundError as e:
+            raise GraphQLError(str(e), extensions={"statusCode": 404})
+        except UnauthorizedError as e:
+            raise GraphQLError(str(e), extensions={"statusCode": 403})
+        return True
+
+    @strawberry.mutation
+    @inject
     async def archive_wallet(
         self,
         wallet_id: uuid.UUID,
