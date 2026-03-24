@@ -48,6 +48,8 @@ def create_container() -> aioinject.Container:
 
     from app.graphql.categories.repositories.category_repository import CategoryRepository
     from app.graphql.categories.services.category_service import CategoryService
+    from app.graphql.invitations.repositories.invitation_repository import InvitationRepository
+    from app.graphql.invitations.services.invitation_service import InvitationService
     from app.graphql.transactions.repositories.transaction_repository import TransactionRepository
     from app.graphql.transactions.services.transaction_service import TransactionService
     from app.graphql.users.repositories.user_repository import UserRepository
@@ -63,5 +65,7 @@ def create_container() -> aioinject.Container:
     container.register(aioinject.Scoped(CategoryService))
     container.register(aioinject.Scoped(TransactionRepository))
     container.register(aioinject.Scoped(TransactionService))
+    container.register(aioinject.Scoped(InvitationRepository))
+    container.register(aioinject.Scoped(InvitationService))
 
     return container

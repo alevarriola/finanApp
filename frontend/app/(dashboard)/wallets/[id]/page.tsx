@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "@/components/lib/graphql/client";
 import { showSuccess, showError } from "@/components/lib/toast";
 import { TransactionFormModal } from "@/components/transactions/TransactionFormModal";
+import { WalletMembersSection } from "@/components/invitations/WalletMembersSection";
 import { TransactionList } from "@/components/transactions/TransactionList";
 import { Transaction, Category } from "@/components/transactions/types";
 import { Wallet } from "@/components/wallets/types";
@@ -188,6 +189,16 @@ export default function WalletDetailPage() {
         onClose={() => setModalOpen(false)}
         onSubmit={handleFormSubmit}
       />
+
+      <div>
+        <h2 className="text-base font-semibold mb-3" style={{ color: "var(--foreground)" }}>
+          Members
+        </h2>
+        <WalletMembersSection
+          walletId={walletId}
+          isOwner={wallet.myRole === "OWNER"}
+        />
+      </div>
     </div>
   );
 }

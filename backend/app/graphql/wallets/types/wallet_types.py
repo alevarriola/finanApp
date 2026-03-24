@@ -15,6 +15,15 @@ class WalletMemberType:
 
 
 @strawberry.type
+class WalletMemberDetailType:
+    user_id: uuid.UUID
+    name: str
+    email: str
+    role: WalletRole
+    joined_at: datetime.datetime
+
+
+@strawberry.type
 class WalletType:
     id: uuid.UUID
     name: str

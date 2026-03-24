@@ -72,6 +72,12 @@ class WalletService:
 
         return await self.repository.save(wallet)
 
+    async def get_wallet_members(self, wallet_id: uuid.UUID) -> list[tuple]:
+        member = await self.repository.get_member(wallet_id, self.auth_info.user_id)
+        if not member:
+            raise NotFoundError("Wallet not found")
+        return await self.repository.get_members_with_users(wallet_id)
+
     async def archive_wallet(self, wallet_id: uuid.UUID) -> Wallet:
         wallet = await self.get_by_id(wallet_id)
         member = await self.repository.get_member(wallet_id, self.auth_info.user_id)

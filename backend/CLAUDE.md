@@ -22,7 +22,10 @@ backend/
 │   └── graphql/
 │       ├── schemas/schema.py   # Root schema — merge all queries/mutations here
 │       ├── users/              # Auth: register, login, me
-│       └── wallets/            # Wallets CRUD with roles
+│       ├── wallets/            # Wallets CRUD with roles + walletMembers query
+│       ├── categories/         # Categories (global defaults + per-user), no icon field
+│       ├── transactions/       # Income/expense transactions with balance calc
+│       └── invitations/        # Wallet invitations (invite, accept, reject, cancel)
 ├── alembic/                # Migrations
 └── pyproject.toml
 ```

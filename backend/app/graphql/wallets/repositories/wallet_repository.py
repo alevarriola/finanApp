@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.graphql.users.models.user import User
 from app.graphql.wallets.models.wallet import Wallet
 from app.graphql.wallets.models.wallet_member import WalletMember
 
@@ -40,6 +41,18 @@ class WalletRepository:
         )
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def get_members_with_users(
+        self, wallet_id: uuid.UUID
+    ) -> list[tuple[WalletMember, User]]:
+        stmt = (
+            select(WalletMember, User)
+            .join(User, WalletMember.user_id == User.id)
+            .where(WalletMember.wallet_id == wallet_id)
+            .order_by(WalletMember.created_at)
+        )
+        result = await self.session.execute(stmt)
+        return list(result.tuples())
 
     async def create(self, wallet: Wallet) -> Wallet:
         self.session.add(wallet)

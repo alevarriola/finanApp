@@ -5,7 +5,9 @@ from strawberry.fastapi import GraphQLRouter
 
 from app.core.middleware.graphql_middleware import GraphQLAuthMiddleware
 from app.graphql.categories.mutations.category_mutations import CategoryMutations
+from app.graphql.invitations.mutations.invitation_mutations import InvitationMutations
 from app.graphql.categories.queries.category_queries import CategoryQueries
+from app.graphql.invitations.queries.invitation_queries import InvitationQueries
 from app.graphql.transactions.mutations.transaction_mutations import TransactionMutations
 from app.graphql.transactions.queries.transaction_queries import TransactionQueries
 from app.graphql.users.mutations.auth_mutations import AuthMutations
@@ -15,12 +17,12 @@ from app.graphql.wallets.queries.wallet_queries import WalletQueries
 
 
 @strawberry.type
-class Query(UserQueries, WalletQueries, CategoryQueries, TransactionQueries):
+class Query(UserQueries, WalletQueries, CategoryQueries, TransactionQueries, InvitationQueries):
     pass
 
 
 @strawberry.type
-class Mutation(AuthMutations, WalletMutations, CategoryMutations, TransactionMutations):
+class Mutation(AuthMutations, WalletMutations, CategoryMutations, TransactionMutations, InvitationMutations):
     pass
 
 

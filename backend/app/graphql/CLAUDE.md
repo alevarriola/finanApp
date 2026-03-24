@@ -116,7 +116,7 @@ class Mutation(AuthMutations, WalletMutations, NewModuleMutations):
 | Module | Phase | Status |
 |--------|-------|--------|
 | `users` | 2 | Done — register, login, me |
-| `wallets` | 3 | Done — CRUD, roles (OWNER/EDITOR/VIEWER) |
-| `transactions` | 4 | Pending |
-| `categories` | 4 | Pending |
-| `invitations` | 5 | Pending |
+| `wallets` | 3 | Done — CRUD, roles (OWNER/EDITOR/VIEWER), walletMembers query |
+| `transactions` | 4 | Done — create, list, delete, balance calc |
+| `categories` | 4 | Done — global defaults + per-user, no icon field |
+| `invitations` | 5 | Done — invite, accept, reject, cancel; received/sent queries |

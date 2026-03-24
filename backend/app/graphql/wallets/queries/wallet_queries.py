@@ -7,7 +7,7 @@ from graphql import GraphQLError
 
 from app.graphql.transactions.services.transaction_service import TransactionService
 from app.graphql.wallets.services.wallet_service import WalletService
-from app.graphql.wallets.types.wallet_types import WalletType
+from app.graphql.wallets.types.wallet_types import WalletMemberDetailType, WalletType
 
 
 @strawberry.type
@@ -40,3 +40,25 @@ class WalletQueries:
             raise GraphQLError(str(e), extensions={"statusCode": 404})
         balance = await transaction_service.get_wallet_balance(wallet_id, wallet.initial_balance)
         return WalletType.from_model(wallet, wallet_service.auth_info.user_id, balance)
+
+    @strawberry.field
+    @inject
+    async def wallet_members(
+        self,
+        wallet_id: uuid.UUID,
+        wallet_service: Injected[WalletService],
+    ) -> list[WalletMemberDetailType]:
+        try:
+            rows = await wallet_service.get_wallet_members(wallet_id)
+        except Exception as e:
+            raise GraphQLError(str(e), extensions={"statusCode": 403})
+        return [
+            WalletMemberDetailType(
+                user_id=uuid.UUID(str(member.user_id)),
+                name=user.name,
+                email=user.email,
+                role=member.role,
+                joined_at=member.created_at,
+            )
+            for member, user in rows
+        ]
