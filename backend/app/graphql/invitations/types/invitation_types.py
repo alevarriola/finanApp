@@ -24,8 +24,8 @@ class InvitationType:
         return cls(
             id=uuid.UUID(str(model.id)),
             wallet_id=uuid.UUID(str(model.wallet_id)),
-            wallet_name=model.wallet.name if model.wallet else "Unknown",
-            invited_by_name=model.invited_by.name if model.invited_by else None,
+            wallet_name=getattr(model, "wallet_name", "Unknown"),
+            invited_by_name=getattr(model, "invited_by_name", None),
             invited_email=model.invited_email,
             role=model.role,
             status=model.status,
