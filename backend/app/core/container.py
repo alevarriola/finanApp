@@ -68,4 +68,10 @@ def create_container() -> aioinject.Container:
     container.register(aioinject.Scoped(InvitationRepository))
     container.register(aioinject.Scoped(InvitationService))
 
+    from app.graphql.reports.repositories.report_repository import ReportRepository
+    from app.graphql.reports.services.report_service import ReportService
+
+    container.register(aioinject.Scoped(ReportRepository))
+    container.register(aioinject.Scoped(ReportService))
+
     return container

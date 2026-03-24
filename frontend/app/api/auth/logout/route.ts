@@ -5,5 +5,5 @@ export async function POST() {
   const cookieStore = await cookies();
   cookieStore.delete("access_token");
   cookieStore.delete("refresh_token");
-  return NextResponse.json({ ok: true });
+  return NextResponse.redirect(new URL("/", process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"));
 }
