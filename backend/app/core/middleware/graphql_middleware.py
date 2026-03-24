@@ -32,7 +32,6 @@ def _get_session_factory():
 
 class GraphQLAuthMiddleware(SchemaExtension):
     async def on_operation(self) -> AsyncGenerator[None, None]:
-        # --- Auth: extract and verify JWT ---
         request = self.execution_context.context["request"]
         auth_header = request.headers.get("Authorization", "")
 
@@ -42,12 +41,10 @@ class GraphQLAuthMiddleware(SchemaExtension):
                 auth_info = _get_jwt_service().verify_access_token(token)
                 auth_info_var.set(auth_info)
             except ValueError:
-                pass  # auth_info stays None; protected resolvers will raise 401
+                pass
 
-        # --- Session: open DB transaction ---
         factory = _get_session_factory()
         async with factory() as session:
             async with session.begin():
                 session_var.set(session)
                 yield
-                # session.begin() auto-commits on success, auto-rollbacks on exception

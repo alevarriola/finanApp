@@ -1,98 +1,75 @@
 # GraphQL Layer — Guide for Claude Agents
 
 ## Purpose
-Exposes all FinanApp API as GraphQL. Each domain has its own directory with the standard structure.
+All GraphQL modules live here. Each domain has its own directory.
 
 ## Module Structure
 
 ```
-app/graphql/wallets/
+app/graphql/<module>/
 ├── __init__.py
-├── enums.py                        # IntEnum classes (WalletType, etc.)
-├── models/
-│   └── wallet.py                   # SQLAlchemy model
-├── repositories/
-│   └── wallet_repository.py        # WalletRepository — DB access only
-├── services/
-│   └── wallet_service.py           # WalletService — business logic only
-├── types/
-│   └── wallet_types.py             # WalletType, CreateWalletInput, UpdateWalletInput
-├── queries/
-│   └── wallet_queries.py           # WalletQueries (@strawberry.field)
-└── mutations/
-    └── wallet_mutations.py         # WalletMutations (@strawberry.mutation)
+├── enums.py                        # IntEnum classes
+├── models/                         # SQLAlchemy models
+├── repositories/                   # DB access only (flush, never commit)
+├── services/                       # Business logic + permission checks
+├── types/                          # Strawberry input/output types
+├── queries/                        # @strawberry.field resolvers
+└── mutations/                      # @strawberry.mutation resolvers
 ```
+
+## Enum Pattern
+
+```python
+import enum
+import strawberry
+
+@strawberry.enum
+class WalletKind(enum.IntEnum):
+    CASH = 1
+    BANK = 2
+    DEBIT = 3
+    CREDIT = 4
+```
+
+Always use `IntEnum` — stored as SMALLINT in PostgreSQL via `IntEnumType` from `app/db/types.py`.
 
 ## Strawberry Type Pattern
 
 ```python
-# types/wallet_types.py
-import strawberry
-import uuid
-import datetime
-from decimal import Decimal
-
 @strawberry.type
 class WalletType:
     id: uuid.UUID
     name: str
-    balance: Decimal
+    wallet_kind: WalletKind
+    current_balance: Decimal
     created_at: datetime.datetime
 
     @classmethod
-    def from_model(cls, model: "Wallet") -> "WalletType":
-        return cls(
-            id=model.id,
-            name=model.name,
-            balance=model.balance,
-            created_at=model.created_at,
-        )
-
-@strawberry.input
-class CreateWalletInput:
-    name: str
-    initial_balance: Decimal
-    wallet_type: str
-    currency: str = "PYG"
+    def from_model(cls, model: Wallet, my_user_id: uuid.UUID) -> "WalletType":
+        return cls(...)
 ```
 
 ## Query Pattern
 
 ```python
-# queries/wallet_queries.py
 import strawberry
-import uuid
-from aioinject.ext.strawberry import inject, Injected
+from aioinject import Injected
+from aioinject.ext.strawberry import inject
 
 @strawberry.type
 class WalletQueries:
     @strawberry.field
     @inject
-    async def get_wallet(
-        self,
-        wallet_id: uuid.UUID,
-        service: Injected["WalletService"],
-    ) -> WalletType | None:
-        wallet = await service.get_by_id(wallet_id)
-        return WalletType.from_model(wallet) if wallet else None
-
-    @strawberry.field
-    @inject
-    async def list_wallets(
-        self,
-        service: Injected["WalletService"],
-    ) -> list[WalletType]:
+    async def wallets(self, service: Injected[WalletService]) -> list[WalletType]:
         wallets = await service.get_user_wallets()
-        return [WalletType.from_model(w) for w in wallets]
+        return [WalletType.from_model(w, service.auth_info.user_id) for w in wallets]
 ```
+
+Note: `Injected` is imported from `aioinject`, not from `aioinject.ext.strawberry`.
 
 ## Mutation Pattern
 
 ```python
-# mutations/wallet_mutations.py
-import strawberry
-from aioinject.ext.strawberry import inject, Injected
-
 @strawberry.type
 class WalletMutations:
     @strawberry.mutation
@@ -100,43 +77,46 @@ class WalletMutations:
     async def create_wallet(
         self,
         input: CreateWalletInput,
-        service: Injected["WalletService"],
+        service: Injected[WalletService],
     ) -> WalletType:
-        wallet = await service.create_wallet(
-            name=input.name,
-            initial_balance=input.initial_balance,
-        )
-        return WalletType.from_model(wallet)
+        try:
+            wallet = await service.create_wallet(...)
+        except NotFoundError as e:
+            raise GraphQLError(str(e), extensions={"statusCode": 404})
+        except UnauthorizedError as e:
+            raise GraphQLError(str(e), extensions={"statusCode": 403})
+        return WalletType.from_model(wallet, service.auth_info.user_id)
 ```
-
-## Registering in the Main Schema
-
-```python
-# schemas/schema.py — add to merge_types
-from app.graphql.wallets.queries.wallet_queries import WalletQueries
-from app.graphql.wallets.mutations.wallet_mutations import WalletMutations
-
-Query = merge_types("Query", (WalletQueries, ...others...))
-Mutation = merge_types("Mutation", (WalletMutations, ...others...))
-```
-
-## Planned Modules
-
-| Module | Phase | Description |
-|--------|-------|-------------|
-| `users` | Phase 2 | Registration, login, profile |
-| `wallets` | Phase 3 | Accounts/wallets |
-| `transactions` | Phase 4 | Income and expenses |
-| `categories` | Phase 4 | Spending categories |
-| `invitations` | Phase 5 | Sharing accounts |
 
 ## GraphQL Errors
 
 ```python
-from strawberry.types import GraphQLError
+from graphql import GraphQLError  # NOT from strawberry.types
 
 raise GraphQLError(
     message="Wallet not found",
     extensions={"statusCode": 404, "type": "NotFoundError"},
 )
 ```
+
+## Registering in the Main Schema (`schemas/schema.py`)
+
+```python
+@strawberry.type
+class Query(UserQueries, WalletQueries, NewModuleQueries):
+    pass
+
+@strawberry.type
+class Mutation(AuthMutations, WalletMutations, NewModuleMutations):
+    pass
+```
+
+## Modules
+
+| Module | Phase | Status |
+|--------|-------|--------|
+| `users` | 2 | Done — register, login, me |
+| `wallets` | 3 | Done — CRUD, roles (OWNER/EDITOR/VIEWER) |
+| `transactions` | 4 | Pending |
+| `categories` | 4 | Pending |
+| `invitations` | 5 | Pending |

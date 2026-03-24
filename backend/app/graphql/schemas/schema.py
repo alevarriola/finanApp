@@ -6,15 +6,17 @@ from strawberry.fastapi import GraphQLRouter
 from app.core.middleware.graphql_middleware import GraphQLAuthMiddleware
 from app.graphql.users.mutations.auth_mutations import AuthMutations
 from app.graphql.users.queries.user_queries import UserQueries
+from app.graphql.wallets.mutations.wallet_mutations import WalletMutations
+from app.graphql.wallets.queries.wallet_queries import WalletQueries
 
 
 @strawberry.type
-class Query(UserQueries):
+class Query(UserQueries, WalletQueries):
     pass
 
 
 @strawberry.type
-class Mutation(AuthMutations):
+class Mutation(AuthMutations, WalletMutations):
     pass
 
 

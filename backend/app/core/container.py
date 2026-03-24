@@ -46,11 +46,14 @@ def create_container() -> aioinject.Container:
     container.register(aioinject.Scoped(_provide_session, interface=AsyncSession))
     container.register(aioinject.Scoped(_provide_auth_info, interface=AuthInfo))
 
-    # Auto-register repositories and services
     from app.graphql.users.repositories.user_repository import UserRepository
     from app.graphql.users.services.user_service import UserService
+    from app.graphql.wallets.repositories.wallet_repository import WalletRepository
+    from app.graphql.wallets.services.wallet_service import WalletService
 
     container.register(aioinject.Scoped(UserRepository))
     container.register(aioinject.Scoped(UserService))
+    container.register(aioinject.Scoped(WalletRepository))
+    container.register(aioinject.Scoped(WalletService))
 
     return container

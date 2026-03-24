@@ -1,78 +1,72 @@
 # Core — Guide for Claude Agents
 
 ## Purpose
-Central configuration, DI container, and GraphQL authentication middleware.
+Central configuration, DI container, shared ContextVars, and GraphQL auth middleware.
 
-## Config (pydantic-settings)
+## Config (`app/core/config/settings.py`)
 
 ```python
-# app/core/config/settings.py
 from app.core.config import get_settings
-settings = get_settings()   # Cached with @functools.cache
+settings = get_settings()  # cached with @functools.cache
 ```
 
-Environment variables (in `.env`):
-- `DATABASE_URL` — PostgreSQL connection string
+Environment variables (in `backend/.env`):
+- `DATABASE_URL` — PostgreSQL async connection string
 - `REDIS_URL` — Redis connection string
 - `JWT_SECRET` — secret for signing tokens
 - `JWT_ALGORITHM` — default HS256
+- `JWT_ACCESS_TOKEN_EXPIRE_HOURS` — default 24
+- `JWT_REFRESH_TOKEN_EXPIRE_DAYS` — default 7
 - `ENVIRONMENT` — "dev" | "staging" | "production"
 - `CORS_ORIGINS` — JSON list of allowed origins
 
-## DI Container (aioinject)
+## Shared ContextVars (`app/core/context.py`)
 
-File: `app/core/container.py`
+```python
+from app.core.context import session_var, auth_info_var
+```
 
-### Scopes
-| Scope | Lifetime | Use for |
+Set by `GraphQLAuthMiddleware` at the start of each request. Read by DI providers in `container.py`.
+Never import and set these manually — only the middleware should write to them.
+
+## DI Container (`app/core/container.py`)
+
+| Scope | Lifetime | Used for |
 |-------|----------|---------|
-| `aioinject.Object(value)` | Forever | Settings (already instantiated) |
-| `aioinject.Singleton(factory)` | Whole app | Session factory, Redis, JWT service |
-| `aioinject.Scoped(cls)` | Per request | Repositories, services, AuthInfo |
+| `aioinject.Object(value)` | Forever | Settings (pre-instantiated) |
+| `aioinject.Singleton(factory)` | Whole app | JWTService, session factory |
+| `aioinject.Scoped(cls)` | Per request | Repositories, Services, session, auth_info |
 
-### Registering a new Singleton
+To register a new repo/service, add to `create_container()`:
+
 ```python
-# In container.py
-container.register(aioinject.Singleton(create_redis_service))
+from app.graphql.transactions.repositories.transaction_repository import TransactionRepository
+from app.graphql.transactions.services.transaction_service import TransactionService
 
-def create_redis_service(settings: Settings) -> RedisService:
-    return RedisService(settings.redis_url)
+container.register(aioinject.Scoped(TransactionRepository))
+container.register(aioinject.Scoped(TransactionService))
 ```
 
-### Repositories and Services — Auto-discovery
-Repositories and services are auto-registered as `Scoped` if their class name ends in `Repository` or `Service`. Just create them with the correct name.
+## GraphQL Auth Middleware (`app/core/middleware/graphql_middleware.py`)
 
-## GraphQL Auth Middleware
-
-File: `app/core/middleware/graphql_middleware.py`
-
-Flow:
+Flow per request:
 1. Extracts `Authorization: Bearer <token>` from header
-2. Verifies JWT with `JWTService`
-3. Creates `AuthInfo(user_id, email)` and injects it into DI context
-4. Opens DB session, executes resolvers
-5. `commit()` on success, `rollback()` on exception
+2. Verifies JWT → sets `auth_info_var` (stays None if no/invalid token)
+3. Opens `session.begin()` → sets `session_var`
+4. Yields (resolvers execute)
+5. Auto-commit on success, auto-rollback on exception
+
+Public operations (register, login) don't inject `AuthInfo` so they work without a token.
+Protected operations inject `AuthInfo` from DI → get 401 automatically if no valid token.
+
+## Exceptions (`app/core/exceptions.py`)
 
 ```python
-# How to access AuthInfo in a service
-class WalletService:
-    def __init__(self, repository: WalletRepository, auth_info: AuthInfo) -> None:
-        self.repository = repository
-        self.auth_info = auth_info  # user_id available here
+from app.core.exceptions import NotFoundError, UnauthorizedError, DuplicateError
+
+raise NotFoundError("Wallet not found")
+raise UnauthorizedError("Only the owner can archive a wallet")
+raise DuplicateError("Email already registered")
 ```
 
-## Auth — JWT Service
-
-File: `app/auth/jwt_service.py`
-
-```python
-# Create token
-token = jwt_service.create_access_token(user_id=user.id)
-
-# Verify token (done automatically by middleware)
-auth_info = jwt_service.verify_token(token)
-```
-
-Tokens:
-- Access token: 24h (configurable via `JWT_ACCESS_TOKEN_EXPIRE_HOURS`)
-- Refresh token: 7 days (configurable via `JWT_REFRESH_TOKEN_EXPIRE_DAYS`)
+Catch these in mutations and convert to `GraphQLError` with appropriate `statusCode`.

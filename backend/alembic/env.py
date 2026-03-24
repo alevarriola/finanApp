@@ -1,14 +1,28 @@
 import asyncio
+import importlib
+import pkgutil
 from logging.config import fileConfig
 
+import app.graphql
+import sqlalchemy as sa
+from alembic import context
+from alembic.autogenerate import renderers
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from alembic import context
-
-from app.db.base import Base
 from app.core.config import get_settings
-import app.graphql.users.models.user  # noqa: F401 — register User model for autogenerate
+from app.db.base import Base
+from app.db.types import IntEnumType
+
+for _, name, _ in pkgutil.walk_packages(app.graphql.__path__, app.graphql.__name__ + "."):
+    if ".models." in name:
+        importlib.import_module(name)
+
+
+@renderers.dispatch_for(IntEnumType)
+def render_int_enum_type(autogen_context, type_):
+    return "sa.SmallInteger()"
+
 
 config = context.config
 
