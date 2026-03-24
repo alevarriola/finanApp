@@ -29,25 +29,30 @@ class WalletType:
     created_at: datetime.datetime
 
     @classmethod
-    def from_model(cls, model: Wallet, my_user_id: uuid.UUID) -> "WalletType":
+    def from_model(
+        cls,
+        model: Wallet,
+        my_user_id: uuid.UUID,
+        current_balance: Decimal | None = None,
+    ) -> "WalletType":
         my_role = WalletRole.VIEWER
         for m in model.members:
-            if m.user_id == my_user_id:
-                my_role = m.role  # already a WalletRole enum from IntEnumType
+            if uuid.UUID(str(m.user_id)) == my_user_id:
+                my_role = m.role
                 break
 
         return cls(
-            id=model.id,
+            id=uuid.UUID(str(model.id)),
             name=model.name,
-            wallet_kind=model.wallet_kind,  # already a WalletKind enum from IntEnumType
+            wallet_kind=model.wallet_kind,
             currency=model.currency,
             initial_balance=model.initial_balance,
-            current_balance=model.initial_balance,  # Phase 4 will add transactions
+            current_balance=current_balance if current_balance is not None else model.initial_balance,
             is_archived=model.is_archived,
-            owner_id=model.owner_id,
+            owner_id=uuid.UUID(str(model.owner_id)),
             my_role=my_role,
             members=[
-                WalletMemberType(user_id=m.user_id, role=m.role)
+                WalletMemberType(user_id=uuid.UUID(str(m.user_id)), role=m.role)
                 for m in model.members
             ],
             created_at=model.created_at,

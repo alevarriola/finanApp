@@ -4,6 +4,10 @@ from aioinject.ext.strawberry import AioInjectExtension
 from strawberry.fastapi import GraphQLRouter
 
 from app.core.middleware.graphql_middleware import GraphQLAuthMiddleware
+from app.graphql.categories.mutations.category_mutations import CategoryMutations
+from app.graphql.categories.queries.category_queries import CategoryQueries
+from app.graphql.transactions.mutations.transaction_mutations import TransactionMutations
+from app.graphql.transactions.queries.transaction_queries import TransactionQueries
 from app.graphql.users.mutations.auth_mutations import AuthMutations
 from app.graphql.users.queries.user_queries import UserQueries
 from app.graphql.wallets.mutations.wallet_mutations import WalletMutations
@@ -11,12 +15,12 @@ from app.graphql.wallets.queries.wallet_queries import WalletQueries
 
 
 @strawberry.type
-class Query(UserQueries, WalletQueries):
+class Query(UserQueries, WalletQueries, CategoryQueries, TransactionQueries):
     pass
 
 
 @strawberry.type
-class Mutation(AuthMutations, WalletMutations):
+class Mutation(AuthMutations, WalletMutations, CategoryMutations, TransactionMutations):
     pass
 
 
