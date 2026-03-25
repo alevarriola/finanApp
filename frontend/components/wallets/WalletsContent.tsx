@@ -26,7 +26,7 @@ export default function WalletsContent() {
 
   const createMutation = useMutation({
     mutationFn: (input: Record<string, unknown>) =>
-      graphqlRequest(CREATE_WALLET_MUTATION, { input }),
+      graphqlRequest(CREATE_WALLET_MUTATION, { input, idempotencyKey: crypto.randomUUID() }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wallets"] });
       showSuccess("Wallet created");

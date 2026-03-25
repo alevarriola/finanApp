@@ -6,6 +6,7 @@ from aioinject.ext.strawberry import inject
 from graphql import GraphQLError
 
 from app.core.exceptions import NotFoundError, UnauthorizedError
+from app.core.idempotency import check_idempotency, raise_duplicate, save_idempotency
 from app.graphql.transactions.services.transaction_service import TransactionService
 from app.graphql.wallets.services.wallet_service import WalletService
 from app.graphql.wallets.types.wallet_types import CreateWalletInput, UpdateWalletInput, WalletType
@@ -20,7 +21,14 @@ class WalletMutations:
         input: CreateWalletInput,
         wallet_service: Injected[WalletService],
         transaction_service: Injected[TransactionService],
+        idempotency_key: uuid.UUID | None = None,
     ) -> WalletType:
+        user_id = wallet_service.auth_info.user_id
+        if idempotency_key:
+            cached = await check_idempotency(user_id, idempotency_key)
+            if cached:
+                raise_duplicate()
+
         wallet = await wallet_service.create_wallet(
             name=input.name,
             wallet_kind=input.wallet_kind,
@@ -30,7 +38,12 @@ class WalletMutations:
         balance = await transaction_service.get_wallet_balance(
             uuid.UUID(str(wallet.id)), wallet.initial_balance
         )
-        return WalletType.from_model(wallet, wallet_service.auth_info.user_id, balance)
+        result = WalletType.from_model(wallet, user_id, balance)
+
+        if idempotency_key:
+            await save_idempotency(user_id, idempotency_key, {"id": str(wallet.id)})
+
+        return result
 
     @strawberry.mutation
     @inject

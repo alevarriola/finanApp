@@ -5,7 +5,9 @@ from aioinject import Injected
 from aioinject.ext.strawberry import inject
 from graphql import GraphQLError
 
+from app.auth.auth_info import AuthInfo
 from app.core.exceptions import NotFoundError, UnauthorizedError
+from app.core.idempotency import check_idempotency, raise_duplicate, save_idempotency
 from app.graphql.transactions.services.transaction_service import TransactionService
 from app.graphql.transactions.types.transaction_types import (
     CreateTransactionInput,
@@ -22,7 +24,14 @@ class TransactionMutations:
         self,
         input: CreateTransactionInput,
         service: Injected[TransactionService],
+        auth_info: Injected[AuthInfo],
+        idempotency_key: uuid.UUID | None = None,
     ) -> TransactionType:
+        if idempotency_key:
+            cached = await check_idempotency(auth_info.user_id, idempotency_key)
+            if cached:
+                raise_duplicate()
+
         try:
             transaction = await service.create_transaction(
                 wallet_id=input.wallet_id,
@@ -34,6 +43,10 @@ class TransactionMutations:
             )
         except (NotFoundError, UnauthorizedError) as e:
             raise GraphQLError(str(e), extensions={"statusCode": 403})
+
+        if idempotency_key:
+            await save_idempotency(auth_info.user_id, idempotency_key, {"id": str(transaction.id)})
+
         return TransactionType.from_model(transaction)
 
     @strawberry.mutation

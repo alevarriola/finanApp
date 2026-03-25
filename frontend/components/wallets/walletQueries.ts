@@ -15,8 +15,8 @@ export const WALLETS_QUERY = `
 `;
 
 export const CREATE_WALLET_MUTATION = `
-  mutation CreateWallet($input: CreateWalletInput!) {
-    createWallet(input: $input) {
+  mutation CreateWallet($input: CreateWalletInput!, $idempotencyKey: UUID) {
+    createWallet(input: $input, idempotencyKey: $idempotencyKey) {
       id
       name
       walletKind

@@ -26,8 +26,8 @@ export const CATEGORIES_QUERY = `
 `;
 
 export const CREATE_TRANSACTION_MUTATION = `
-  mutation CreateTransaction($input: CreateTransactionInput!) {
-    createTransaction(input: $input) {
+  mutation CreateTransaction($input: CreateTransactionInput!, $idempotencyKey: UUID) {
+    createTransaction(input: $input, idempotencyKey: $idempotencyKey) {
       id
       walletId
       amount
