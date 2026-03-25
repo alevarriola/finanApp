@@ -24,3 +24,7 @@ class UserRepository:
         self.session.add(user)
         await self.session.flush([user])
         return user
+
+    async def save(self, user: User) -> User:
+        await self.session.flush()
+        return user

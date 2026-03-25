@@ -30,6 +30,29 @@
   --radius: 0.5rem;
 }
 
+[data-theme="dark"] {
+  --background: #0f1117;
+  --foreground: #e4e4e7;
+  --primary: #34d399;
+  --primary-foreground: #0f1117;
+
+  --secondary: #1c2a23;
+  --secondary-foreground: #34d399;
+
+  --muted: #1e1f26;
+  --muted-foreground: #9ca3af;
+
+  --card: #181a20;
+  --card-foreground: #e4e4e7;
+
+  --border: #2e3039;
+  --input: #23252d;
+
+  --destructive: #ef4444;
+  --success: #34d399;
+  --warning: #f59e0b;
+}
+
 * {
   border-color: var(--border);
 }

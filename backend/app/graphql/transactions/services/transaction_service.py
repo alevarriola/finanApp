@@ -108,6 +108,23 @@ class TransactionService:
         await self._check_wallet_access(transaction.wallet_id, require_editor=True)
         await self.repository.delete(transaction)
 
+    async def list_all_transactions(
+        self,
+        wallet_id: uuid.UUID | None = None,
+        transaction_kind: TransactionKind | None = None,
+        category_id: uuid.UUID | None = None,
+        date_from: datetime.date | None = None,
+        date_to: datetime.date | None = None,
+    ) -> list[Transaction]:
+        return await self.repository.get_all_for_user(
+            self.auth_info.user_id,
+            wallet_id=wallet_id,
+            transaction_kind=transaction_kind,
+            category_id=category_id,
+            date_from=date_from,
+            date_to=date_to,
+        )
+
     async def get_wallet_balance(self, wallet_id: uuid.UUID, initial_balance: Decimal) -> Decimal:
         net = await self.repository.get_wallet_net(wallet_id)
         return initial_balance + net

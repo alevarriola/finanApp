@@ -82,6 +82,42 @@ class TransactionRepository:
         await self.session.flush()
         return transaction
 
+    async def get_all_for_user(
+        self,
+        user_id: uuid.UUID,
+        wallet_id: uuid.UUID | None = None,
+        transaction_kind: TransactionKind | None = None,
+        category_id: uuid.UUID | None = None,
+        date_from: datetime.date | None = None,
+        date_to: datetime.date | None = None,
+    ) -> list[Transaction]:
+        from app.graphql.wallets.models.wallet import Wallet
+        from app.graphql.wallets.models.wallet_member import WalletMember
+
+        stmt = (
+            select(Transaction, Wallet.name)
+            .join(WalletMember, Transaction.wallet_id == WalletMember.wallet_id)
+            .join(Wallet, Transaction.wallet_id == Wallet.id)
+            .where(WalletMember.user_id == user_id, Wallet.is_archived.is_(False))
+        )
+        if wallet_id is not None:
+            stmt = stmt.where(Transaction.wallet_id == wallet_id)
+        if transaction_kind is not None:
+            stmt = stmt.where(Transaction.transaction_kind == transaction_kind)
+        if category_id is not None:
+            stmt = stmt.where(Transaction.category_id == category_id)
+        if date_from is not None:
+            stmt = stmt.where(Transaction.date >= date_from)
+        if date_to is not None:
+            stmt = stmt.where(Transaction.date <= date_to)
+        stmt = stmt.order_by(Transaction.date.desc(), Transaction.created_at.desc())
+        rows = (await self.session.execute(stmt)).all()
+        result = []
+        for txn, wallet_name in rows:
+            txn.wallet_name = wallet_name  # type: ignore[attr-defined]
+            result.append(txn)
+        return result
+
     async def delete(self, transaction: Transaction) -> None:
         await self.session.delete(transaction)
         await self.session.flush()

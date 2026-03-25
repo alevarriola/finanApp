@@ -39,3 +39,19 @@ class UserService:
 
     async def get_by_id(self, user_id: uuid.UUID) -> User | None:
         return await self.repository.get_by_id(user_id)
+
+    async def update_name(self, user_id: uuid.UUID, name: str) -> User:
+        user = await self.repository.get_by_id(user_id)
+        if not user:
+            raise NotFoundError("User not found")
+        user.name = name
+        return await self.repository.save(user)
+
+    async def change_password(self, user_id: uuid.UUID, current_password: str, new_password: str) -> None:
+        user = await self.repository.get_by_id(user_id)
+        if not user:
+            raise NotFoundError("User not found")
+        if not bcrypt.checkpw(current_password.encode(), user.hashed_password.encode()):
+            raise UnauthorizedError("Current password is incorrect")
+        user.hashed_password = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+        await self.repository.save(user)

@@ -36,3 +36,23 @@ class TransactionQueries:
         except (NotFoundError, UnauthorizedError) as e:
             raise GraphQLError(str(e), extensions={"statusCode": 404})
         return [TransactionType.from_model(t) for t in txns]
+
+    @strawberry.field
+    @inject
+    async def all_transactions(
+        self,
+        service: Injected[TransactionService],
+        wallet_id: uuid.UUID | None = None,
+        transaction_kind: TransactionKind | None = None,
+        category_id: uuid.UUID | None = None,
+        date_from: datetime.date | None = None,
+        date_to: datetime.date | None = None,
+    ) -> list[TransactionType]:
+        txns = await service.list_all_transactions(
+            wallet_id=wallet_id,
+            transaction_kind=transaction_kind,
+            category_id=category_id,
+            date_from=date_from,
+            date_to=date_to,
+        )
+        return [TransactionType.from_model(t) for t in txns]
