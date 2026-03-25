@@ -14,6 +14,7 @@ backend/
 │   │   ├── context.py      # Shared per-request ContextVars (session, auth_info)
 │   │   ├── container.py    # DI container (aioinject)
 │   │   ├── exceptions.py   # NotFoundError, UnauthorizedError, DuplicateError
+│   │   ├── idempotency.py  # Redis-based idempotency keys for create mutations
 │   │   └── middleware/     # GraphQLAuthMiddleware (JWT + DB session)
 │   ├── db/
 │   │   ├── base.py         # BaseModel, HasPrimaryKey, HasCreatedAt, HasUpdatedAt
@@ -25,7 +26,8 @@ backend/
 │       ├── wallets/            # Wallets CRUD with roles + walletMembers query
 │       ├── categories/         # Categories (global defaults + per-user), no icon field
 │       ├── transactions/       # Income/expense transactions with balance calc
-│       └── invitations/        # Wallet invitations (invite, accept, reject, cancel)
+│       ├── invitations/        # Wallet invitations (invite, accept, reject, cancel)
+│       └── reports/            # Dashboard summary, aggregations (read-only, no models)
 ├── alembic/                # Migrations
 └── pyproject.toml
 ```
@@ -83,9 +85,27 @@ app/graphql/wallets/
 - `Scoped` → one instance per request (repositories, services, session, auth_info)
 - Register new repos/services in `app/core/container.py`
 
+## Idempotency Keys (create mutations)
+- **Always** add `idempotency_key: uuid.UUID | None = None` to create mutations
+- Use `check_idempotency()` before creating, `save_idempotency()` after
+- Redis-based, 5-minute TTL, key format: `idempotency:{user_id}:{key}`
+- Frontend generates `crypto.randomUUID()` per submit
+
+```python
+from app.core.idempotency import check_idempotency, raise_duplicate, save_idempotency
+
+if idempotency_key:
+    if await check_idempotency(user_id, idempotency_key):
+        raise_duplicate()  # → 409 error
+# ... create resource ...
+if idempotency_key:
+    await save_idempotency(user_id, idempotency_key, {"id": str(resource.id)})
+```
+
 ## Adding a New Module (checklist)
 1. Create `app/graphql/<module>/` with full structure
 2. Add model imports to `alembic/env.py` (`from ... import Model` + `_ = (Model,)`)
 3. Register repo and service in `app/core/container.py`
 4. Add queries/mutations to `app/graphql/schemas/schema.py` (Query + Mutation classes)
-5. Run `uv run alembic revision --autogenerate -m "description"`
+5. Add idempotency keys to create mutations (see above)
+6. Run `uv run alembic revision --autogenerate -m "description"`

@@ -14,7 +14,7 @@ async function getUser() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ query: "{ me { id name email } }" }),
+      body: JSON.stringify({ query: "{ me { id name email isVerified } }" }),
       cache: "no-store",
     }
   );
@@ -90,6 +90,23 @@ export default async function DashboardLayout({
             </button>
           </form>
         </header>
+        {user && !user.isVerified && (
+          <div
+            className="px-6 py-3 text-sm flex items-center justify-between"
+            style={{ backgroundColor: "#fef3c7", color: "#92400e" }}
+          >
+            <span>Please verify your email address. Check your inbox for a verification link.</span>
+            <form action="/api/auth/resend-verification" method="POST">
+              <button
+                type="submit"
+                className="text-xs font-semibold underline hover:opacity-70"
+                style={{ color: "#92400e" }}
+              >
+                Resend email
+              </button>
+            </form>
+          </div>
+        )}
         <div className="flex-1 p-6">{children}</div>
       </main>
     </div>

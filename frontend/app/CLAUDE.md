@@ -15,10 +15,12 @@ app/
 ├── (dashboard)/                  # JWT-protected group
 │   ├── layout.tsx                # DashboardShell: sidebar + topbar
 │   ├── page.tsx                  # Redirect to /dashboard
-│   ├── dashboard/page.tsx        # Main dashboard
+│   ├── dashboard/page.tsx        # Dashboard: stats, charts, filters (Recharts)
 │   ├── wallets/page.tsx          # Wallets list
-│   ├── transactions/page.tsx     # Transactions
-│   └── settings/page.tsx        # User settings
+│   ├── wallets/[id]/page.tsx     # Wallet detail: transactions + add form
+│   ├── transactions/page.tsx     # Global transactions with wallet/kind/category/date filters
+│   ├── sharing/page.tsx          # Manage shared wallets + invitations
+│   └── settings/page.tsx         # Profile, password, dark mode toggle
 │
 └── api/
     ├── backend/route.ts          # Proxy → backend GraphQL (POST)

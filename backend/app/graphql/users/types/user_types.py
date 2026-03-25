@@ -12,6 +12,7 @@ class UserType:
     email: str
     name: str
     is_active: bool
+    is_verified: bool
     created_at: datetime.datetime
 
     @classmethod
@@ -21,6 +22,7 @@ class UserType:
             email=model.email,
             name=model.name,
             is_active=model.is_active,
+            is_verified=model.is_verified,
             created_at=model.created_at,
         )
 

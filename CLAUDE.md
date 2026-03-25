@@ -19,12 +19,15 @@ finanApp/
 4. **NEVER** add file header docstrings
 5. Repositories: ONLY data access. Services: ONLY business logic
 6. All dependencies injected via `aioinject` — no global state
+7. **ALWAYS** add idempotency keys to create mutations — use `app/core/idempotency.py` with Redis (see `ARCHITECTURE_REFERENCE.md` §25b)
+8. **ALWAYS** use CSS variables for colors — support light/dark themes via `[data-theme="dark"]`
 
 ## Technology Stack
 - Backend: FastAPI, Strawberry GraphQL, SQLAlchemy 2.0 async, aioinject, Alembic, bcrypt, PyJWT
-- Database: PostgreSQL (single schema), Redis
-- Frontend: Next.js 15, React Query 5, react-hook-form, Zod, Radix UI, Tailwind CSS, Sonner
+- Database: PostgreSQL (single schema), Redis (idempotency + cache)
+- Frontend: Next.js 15, React Query 5, react-hook-form, Zod, Radix UI, Tailwind CSS, Sonner, Recharts
 - Package managers: UV (backend), pnpm (frontend)
+- Dark mode: CSS variables with `[data-theme="dark"]`, persisted in localStorage
 
 ## App Colors
 - Background: `#FFFACA` (cream yellow)

@@ -42,11 +42,17 @@ NEXT_PUBLIC_APP_NAME=FinanApp
 
 ## Color Palette (CSS Variables)
 Defined in `app/globals.css`:
-- `--background: #FFFACA` — cream yellow
-- `--primary: #004F39` — dark green
-- `--foreground: #151613` — near black
+- `--background: #FFFACA` — cream yellow (light) / `#0f1117` (dark)
+- `--primary: #004F39` — dark green (light) / `#34d399` (dark)
+- `--foreground: #151613` — near black (light) / `#e4e4e7` (dark)
 
-Always use via Tailwind (`bg-primary`, `text-foreground`) or inline `style={{ color: "var(--primary)" }}`.
+Always use `style={{ color: "var(--primary)" }}`. Never hardcode colors.
+
+## Dark Mode
+- Toggle via `[data-theme="dark"]` on `<html>` element
+- CSS variables auto-switch in `globals.css`
+- Persisted in `localStorage("theme")`, loaded in `<head>` script to prevent flash
+- Settings page provides Light/Dark toggle
 
 ## Component Rules
 1. All page components are `"use client"` unless explicitly a Server Component
@@ -54,3 +60,4 @@ Always use via Tailwind (`bg-primary`, `text-foreground`) or inline `style={{ co
 3. Loading states: always use skeletons, never return `null`
 4. Errors: show toast + visible error state in UI
 5. Forms: always use `react-hook-form` + `Zod` schema
+6. Create mutations **must** include `idempotencyKey: crypto.randomUUID()` as a variable

@@ -14,6 +14,11 @@ class Settings(BaseSettings):
     jwt_access_token_expire_hours: int = 24
     jwt_refresh_token_expire_days: int = 7
 
+    # Email (Resend)
+    resend_api_key: str = ""
+    resend_from_email: str = "onboarding@resend.dev"
+    frontend_url: str = "http://localhost:3000"
+
     # App
     environment: str = "dev"
     app_name: str = "FinanApp"

@@ -31,6 +31,11 @@ class AuthMutations:
         access_token = jwt_service.create_access_token(user.id, user.email)
         refresh_token = jwt_service.create_refresh_token(user.id)
 
+        try:
+            await service.send_verification_email(user.id)
+        except Exception:
+            pass  # Don't block registration if email fails
+
         return TokensType(
             access_token=access_token,
             refresh_token=refresh_token,

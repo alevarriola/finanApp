@@ -1,3 +1,5 @@
+import uuid
+
 import strawberry
 from aioinject import Injected
 from aioinject.ext.strawberry import inject
@@ -40,3 +42,27 @@ class UserMutations:
             code = 404 if isinstance(e, NotFoundError) else 401
             raise GraphQLError(str(e), extensions={"statusCode": code})
         return True
+
+    @strawberry.mutation
+    @inject
+    async def send_verification_email(
+        self,
+        service: Injected[UserService],
+        auth_info: Injected[AuthInfo],
+    ) -> bool:
+        try:
+            return await service.send_verification_email(auth_info.user_id)
+        except NotFoundError as e:
+            raise GraphQLError(str(e), extensions={"statusCode": 404})
+
+    @strawberry.mutation
+    @inject
+    async def verify_email(
+        self,
+        token: uuid.UUID,
+        service: Injected[UserService],
+    ) -> bool:
+        try:
+            return await service.verify_email(token)
+        except (NotFoundError, UnauthorizedError) as e:
+            raise GraphQLError(str(e), extensions={"statusCode": 400})

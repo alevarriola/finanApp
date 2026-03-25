@@ -17,6 +17,7 @@ dependencies = [
     "redis>=5.2.0",
     "loguru>=0.7.0",
     "python-multipart>=0.0.20",
+    "resend>=2.26.0",
 ]
 
 [dependency-groups]

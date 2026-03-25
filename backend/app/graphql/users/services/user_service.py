@@ -2,6 +2,7 @@ import uuid
 
 import bcrypt
 
+from app.core.email_service import create_verification_token, get_verification_data, send_verification_email
 from app.core.exceptions import DuplicateError, NotFoundError, UnauthorizedError
 from app.graphql.users.models.user import User
 from app.graphql.users.repositories.user_repository import UserRepository
@@ -55,3 +56,26 @@ class UserService:
             raise UnauthorizedError("Current password is incorrect")
         user.hashed_password = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
         await self.repository.save(user)
+
+    async def send_verification_email(self, user_id: uuid.UUID) -> bool:
+        user = await self.repository.get_by_id(user_id)
+        if not user:
+            raise NotFoundError("User not found")
+        if user.is_verified:
+            return True
+        token = await create_verification_token(user.id, user.email)
+        send_verification_email(user.email, token)
+        return True
+
+    async def verify_email(self, token: uuid.UUID) -> bool:
+        data = await get_verification_data(token)
+        if not data:
+            raise NotFoundError("Invalid or expired verification link")
+        user = await self.repository.get_by_id(uuid.UUID(data["user_id"]))
+        if not user:
+            raise NotFoundError("User not found")
+        if user.email != data["email"]:
+            raise UnauthorizedError("Email mismatch")
+        user.is_verified = True
+        await self.repository.save(user)
+        return True
