@@ -6,7 +6,7 @@ export default function HomePage() {
       {/* Nav */}
       <header className="flex items-center justify-between px-8 py-5">
         <span className="text-lg font-bold tracking-tight" style={{ color: "var(--primary)" }}>
-          FinanApp
+          Kash
         </span>
         <Link
           href="/sign-in"

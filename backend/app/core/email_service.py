@@ -51,10 +51,10 @@ def send_verification_email(to_email: str, token: uuid.UUID) -> None:
     resend.Emails.send({
         "from": settings.resend_from_email,
         "to": [to_email],
-        "subject": "Verify your email — FinanApp",
+        "subject": "Verify your email — Kash",
         "html": f"""
         <div style="font-family: -apple-system, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-            <h2 style="color: #004F39; margin-bottom: 8px;">Welcome to FinanApp</h2>
+            <h2 style="color: #004F39; margin-bottom: 8px;">Welcome to Kash</h2>
             <p style="color: #333; font-size: 15px; line-height: 1.6;">
                 Click the button below to verify your email address.
             </p>

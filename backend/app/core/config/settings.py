@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     # App
     environment: str = "dev"
-    app_name: str = "FinanApp"
+    app_name: str = "Kash"
     cors_origins: list[str] = ["http://localhost:3000"]
 
     model_config = SettingsConfigDict(

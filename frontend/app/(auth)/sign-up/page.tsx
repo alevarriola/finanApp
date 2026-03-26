@@ -79,7 +79,7 @@ export default function SignUpPage() {
         className="text-2xl font-bold mb-1"
         style={{ color: "var(--primary)" }}
       >
-        FinanApp
+        Kash
       </h1>
       <p className="text-sm mb-6" style={{ color: "var(--foreground)" }}>
         Create your account
