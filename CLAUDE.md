@@ -1,13 +1,13 @@
-# FinanApp — Global Guide for Claude Agents
+# Kash — Global Guide for Claude Agents
 
 ## Project Description
-Personal finance app. Allows managing accounts/wallets, recording income and expenses, viewing balances, and sharing accounts with other users.
+Personal finance app called **Kash** (domain: kash-py.com). Manage wallets, record income/expenses, view balances, share accounts, and get reports with charts.
 
 ## Monorepo Structure
 ```
 finanApp/
 ├── backend/       # FastAPI + Strawberry GraphQL + SQLAlchemy 2.0
-├── frontend/      # Next.js 15 + React Query + Tailwind CSS
+├── frontend/      # Next.js 15 + React Query + Tailwind CSS + Lucide Icons
 ├── ROADMAP.md     # Phase status and pending tasks
 └── docker-compose.yml  # Postgres + Redis
 ```
@@ -21,18 +21,22 @@ finanApp/
 6. All dependencies injected via `aioinject` — no global state
 7. **ALWAYS** add idempotency keys to create mutations — use `app/core/idempotency.py` with Redis (see `ARCHITECTURE_REFERENCE.md` §25b)
 8. **ALWAYS** use CSS variables for colors — support light/dark themes via `[data-theme="dark"]`
+9. **NEVER** use `pip install` — use `uv add` (backend) or `pnpm add` (frontend)
+10. **NEVER** run `git add/commit` — always give user the commands to copy/paste
 
 ## Technology Stack
-- Backend: FastAPI, Strawberry GraphQL, SQLAlchemy 2.0 async, aioinject, Alembic, bcrypt, PyJWT
-- Database: PostgreSQL (single schema), Redis (idempotency + cache)
-- Frontend: Next.js 15, React Query 5, react-hook-form, Zod, Radix UI, Tailwind CSS, Sonner, Recharts
+- Backend: FastAPI, Strawberry GraphQL, SQLAlchemy 2.0 async, aioinject, Alembic, bcrypt, PyJWT, Resend
+- Database: PostgreSQL (single schema), Redis (idempotency + cache + email verification tokens)
+- Frontend: Next.js 15, React Query 5, react-hook-form, Zod, Radix UI, Tailwind CSS, Sonner, Recharts, Lucide React
 - Package managers: UV (backend), pnpm (frontend)
 - Dark mode: CSS variables with `[data-theme="dark"]`, persisted in localStorage
+- PWA: manifest.json + service worker, installable on mobile
+- Email: Resend (noreply@kash-py.com)
 
 ## App Colors
-- Background: `#FFFACA` (cream yellow)
-- Primary: `#004F39` (dark green)
-- Foreground: `#151613` (near black)
+- Background: `#FFFACA` (cream yellow) / dark: `#0f1117`
+- Primary: `#004F39` (dark green) / dark: `#34d399`
+- Foreground: `#151613` (near black) / dark: `#e4e4e7`
 
 ## Project Phases
 See [ROADMAP.md](./ROADMAP.md) for current status and pending tasks.

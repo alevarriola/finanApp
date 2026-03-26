@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { showError, showSuccess } from "@/components/lib/toast";
+import { PasswordInput } from "@/components/shared/PasswordInput";
 
 const schema = z.object({
   email: z.string().email("Invalid email"),
@@ -89,16 +90,10 @@ export default function SignInPage() {
           >
             Password
           </label>
-          <input
+          <PasswordInput
             {...register("password")}
-            type="password"
             autoComplete="current-password"
-            className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:ring-2"
-            style={{
-              borderColor: errors.password ? "#dc2626" : "var(--border)",
-              backgroundColor: "var(--background)",
-              color: "var(--foreground)",
-            }}
+            hasError={!!errors.password}
           />
           {errors.password && (
             <p className="text-xs mt-1 text-red-600">

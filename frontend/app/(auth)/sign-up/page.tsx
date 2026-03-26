@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { graphqlRequest } from "@/components/lib/graphql/client";
 import { showError, showSuccess } from "@/components/lib/toast";
+import { PasswordInput } from "@/components/shared/PasswordInput";
 
 const REGISTER_MUTATION = `
   mutation Register($input: RegisterInput!) {
@@ -26,6 +27,10 @@ const schema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email"),
   password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -139,20 +144,33 @@ export default function SignUpPage() {
           >
             Password
           </label>
-          <input
+          <PasswordInput
             {...register("password")}
-            type="password"
             autoComplete="new-password"
-            className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:ring-2"
-            style={{
-              borderColor: errors.password ? "#dc2626" : "var(--border)",
-              backgroundColor: "var(--background)",
-              color: "var(--foreground)",
-            }}
+            hasError={!!errors.password}
           />
           {errors.password && (
             <p className="text-xs mt-1 text-red-600">
               {errors.password.message}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label
+            className="block text-sm font-medium mb-1"
+            style={{ color: "var(--foreground)" }}
+          >
+            Confirm password
+          </label>
+          <PasswordInput
+            {...register("confirmPassword")}
+            autoComplete="new-password"
+            hasError={!!errors.confirmPassword}
+          />
+          {errors.confirmPassword && (
+            <p className="text-xs mt-1 text-red-600">
+              {errors.confirmPassword.message}
             </p>
           )}
         </div>
