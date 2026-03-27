@@ -53,8 +53,9 @@ export default function SignUpPage() {
 
   async function onSubmit(values: FormValues) {
     try {
+      const { confirmPassword: _, ...input } = values;
       const data = await graphqlRequest<RegisterData>(REGISTER_MUTATION, {
-        input: values,
+        input,
       });
 
       // Set cookies via login endpoint reusing tokens
