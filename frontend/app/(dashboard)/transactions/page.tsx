@@ -24,12 +24,12 @@ const ALL_TRANSACTIONS_QUERY = `
       dateFrom: $dateFrom,
       dateTo: $dateTo
     ) {
-      id walletId walletName amount transactionKind date description categoryId createdAt
+      id walletId walletName walletCurrency amount transactionKind date description categoryId createdAt
     }
   }
 `;
 
-type GlobalTransaction = Transaction & { walletName: string | null };
+type GlobalTransaction = Transaction & { walletName: string | null; walletCurrency: string | null };
 
 function formatCurrency(amount: number, currency = "PYG") {
   return new Intl.NumberFormat("en-US", {
@@ -236,7 +236,7 @@ export default function TransactionsPage() {
                         className="text-sm font-semibold tabular-nums"
                         style={{ color: isIncome ? "#16a34a" : "#dc2626" }}
                       >
-                        {isIncome ? "+" : "-"}{formatCurrency(txn.amount, currency)}
+                        {isIncome ? "+" : "-"}{formatCurrency(txn.amount, txn.walletCurrency ?? "PYG")}
                       </span>
                       <button
                         onClick={() => deleteMutation.mutate(txn.id)}

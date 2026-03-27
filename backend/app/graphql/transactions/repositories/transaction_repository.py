@@ -95,7 +95,7 @@ class TransactionRepository:
         from app.graphql.wallets.models.wallet_member import WalletMember
 
         stmt = (
-            select(Transaction, Wallet.name)
+            select(Transaction, Wallet.name, Wallet.currency)
             .join(WalletMember, Transaction.wallet_id == WalletMember.wallet_id)
             .join(Wallet, Transaction.wallet_id == Wallet.id)
             .where(WalletMember.user_id == user_id, Wallet.is_archived.is_(False))
@@ -113,8 +113,9 @@ class TransactionRepository:
         stmt = stmt.order_by(Transaction.date.desc(), Transaction.created_at.desc())
         rows = (await self.session.execute(stmt)).all()
         result = []
-        for txn, wallet_name in rows:
+        for txn, wallet_name, wallet_currency in rows:
             txn.wallet_name = wallet_name  # type: ignore[attr-defined]
+            txn.wallet_currency = wallet_currency  # type: ignore[attr-defined]
             result.append(txn)
         return result
 
