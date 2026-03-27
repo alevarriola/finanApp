@@ -235,7 +235,7 @@ export default function DashboardPage() {
           <option value="">{t("dashboard.allCategories")}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.name}
+              {locale === "es" && c.nameEs ? c.nameEs : c.name}
             </option>
           ))}
         </select>
@@ -416,7 +416,7 @@ export default function DashboardPage() {
               {t("dashboard.topCategory")}
             </p>
             <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-              {summary.topExpenseCategory}
+              {locale === "es" && summary.topExpenseCategoryEs ? summary.topExpenseCategoryEs : summary.topExpenseCategory}
             </p>
           </div>
           <p className="ml-auto text-sm font-bold" style={{ color: "#dc2626" }}>

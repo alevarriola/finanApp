@@ -126,6 +126,7 @@ class ReportService:
             period_income=income,
             period_expense=expense,
             top_expense_category=expenses_by_category[0].category_name if expenses_by_category else None,
+            top_expense_category_es=expenses_by_category[0].category_name_es if expenses_by_category else None,
             top_expense_amount=expenses_by_category[0].total if expenses_by_category else None,
             expenses_by_category=expenses_by_category,
             monthly_evolution=monthly_evolution,

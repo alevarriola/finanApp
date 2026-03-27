@@ -260,7 +260,7 @@ const es: Record<keyof typeof en, string> = {
   "landing.everythingTitle": "Todo lo que necesitas",
   "landing.everythingSubtitle": "Herramientas simples para manejar tus finanzas sin complicaciones.",
   "landing.readyTitle": "Listo para empezar?",
-  "landing.readySubtitle": "Gratis. Sin tarjeta de credito.",
+  "landing.readySubtitle": "100% gratis. No requerimos datos de tarjeta de credito.",
   "landing.readyCta": "Crea tu cuenta",
   "landing.footer": "Kash - Gestion de finanzas personales",
 

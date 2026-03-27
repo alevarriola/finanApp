@@ -6,6 +6,7 @@ export const DASHBOARD_SUMMARY_QUERY = `
       periodIncome
       periodExpense
       topExpenseCategory
+      topExpenseCategoryEs
       topExpenseAmount
       expensesByCategory {
         categoryId

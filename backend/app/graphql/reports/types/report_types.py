@@ -29,6 +29,7 @@ class DashboardSummary:
     period_income: Decimal
     period_expense: Decimal
     top_expense_category: str | None
+    top_expense_category_es: str | None
     top_expense_amount: Decimal | None
     expenses_by_category: list[CategorySpend]
     monthly_evolution: list[MonthlyPoint]

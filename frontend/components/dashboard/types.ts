@@ -25,6 +25,7 @@ export interface DashboardSummary {
   periodIncome: number;
   periodExpense: number;
   topExpenseCategory: string | null;
+  topExpenseCategoryEs: string | null;
   topExpenseAmount: number | null;
   expensesByCategory: CategorySpend[];
   monthlyEvolution: MonthlyPoint[];

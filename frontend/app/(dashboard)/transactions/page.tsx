@@ -228,10 +228,10 @@ export default function TransactionsPage() {
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate" style={{ color: "var(--foreground)" }}>
-                          {txn.description ?? category?.name ?? (isIncome ? "Income" : "Expense")}
+                          {txn.description ?? (category ? (locale === "es" && category.nameEs ? category.nameEs : category.name) : (isIncome ? t("transactions.income") : t("transactions.expense")))}
                         </p>
                         <p className="text-xs opacity-50 truncate" style={{ color: "var(--foreground)" }}>
-                          {[category?.name, txn.walletName].filter(Boolean).join(" · ")}
+                          {[category ? (locale === "es" && category.nameEs ? category.nameEs : category.name) : null, txn.walletName].filter(Boolean).join(" · ")}
                         </p>
                       </div>
                       <span
