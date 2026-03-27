@@ -1,9 +1,16 @@
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     # Database
     database_url: str = "postgresql+asyncpg://finanapp:finanapp@localhost:5432/finanapp"
+
+    @model_validator(mode="after")
+    def fix_database_url(self) -> "Settings":
+        if self.database_url.startswith("postgresql://"):
+            self.database_url = self.database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return self
 
     # Redis
     redis_url: str = "redis://localhost:6379/0"
