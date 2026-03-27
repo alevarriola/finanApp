@@ -273,7 +273,7 @@ export default function DashboardPage() {
 
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Expenses by category — Pie */}
+        {/* Expenses by category - Pie */}
         <div
           className="rounded-xl border p-5"
           style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
@@ -324,7 +324,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Monthly evolution — Area */}
+        {/* Monthly evolution - Area */}
         <div
           className="rounded-xl border p-5"
           style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}

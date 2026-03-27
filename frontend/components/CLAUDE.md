@@ -1,4 +1,4 @@
-# Components — Guide for Claude Agents
+# Components - Guide for Claude Agents
 
 ## Organization
 
@@ -133,7 +133,7 @@ export const showInfoToast = (msg: string) => toast.info(msg);
 ```
 
 ## Project Color Classes (Tailwind)
-Use CSS variables for colors — already mapped in `tailwind.config.ts`:
+Use CSS variables for colors - already mapped in `tailwind.config.ts`:
 ```
 bg-primary          → #004F39 (dark green)
 text-primary        → #004F39

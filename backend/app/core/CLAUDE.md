@@ -1,4 +1,4 @@
-# Core — Guide for Claude Agents
+# Core - Guide for Claude Agents
 
 ## Purpose
 Central configuration, DI container, shared ContextVars, and GraphQL auth middleware.
@@ -11,14 +11,14 @@ settings = get_settings()  # cached with @functools.cache
 ```
 
 Environment variables (in `backend/.env`):
-- `DATABASE_URL` — PostgreSQL async connection string
-- `REDIS_URL` — Redis connection string
-- `JWT_SECRET` — secret for signing tokens
-- `JWT_ALGORITHM` — default HS256
-- `JWT_ACCESS_TOKEN_EXPIRE_HOURS` — default 24
-- `JWT_REFRESH_TOKEN_EXPIRE_DAYS` — default 7
-- `ENVIRONMENT` — "dev" | "staging" | "production"
-- `CORS_ORIGINS` — JSON list of allowed origins
+- `DATABASE_URL` - PostgreSQL async connection string
+- `REDIS_URL` - Redis connection string
+- `JWT_SECRET` - secret for signing tokens
+- `JWT_ALGORITHM` - default HS256
+- `JWT_ACCESS_TOKEN_EXPIRE_HOURS` - default 24
+- `JWT_REFRESH_TOKEN_EXPIRE_DAYS` - default 7
+- `ENVIRONMENT` - "dev" | "staging" | "production"
+- `CORS_ORIGINS` - JSON list of allowed origins
 
 ## Shared ContextVars (`app/core/context.py`)
 
@@ -27,7 +27,7 @@ from app.core.context import session_var, auth_info_var
 ```
 
 Set by `GraphQLAuthMiddleware` at the start of each request. Read by DI providers in `container.py`.
-Never import and set these manually — only the middleware should write to them.
+Never import and set these manually - only the middleware should write to them.
 
 ## DI Container (`app/core/container.py`)
 

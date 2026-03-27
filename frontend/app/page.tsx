@@ -12,7 +12,7 @@ const FEATURES = [
   {
     icon: Wallet,
     title: "Multiple wallets",
-    desc: "Cash, bank accounts, debit & credit cards — all in one place.",
+    desc: "Cash, bank accounts, debit & credit cards - all in one place.",
   },
   {
     icon: ArrowLeftRight,

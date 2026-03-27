@@ -9,6 +9,8 @@ import {
   LogOut,
 } from "lucide-react";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { InstallBanner } from "@/components/layout/InstallBanner";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -51,7 +53,7 @@ export default async function DashboardLayout({
       className="min-h-screen flex"
       style={{ backgroundColor: "var(--background)" }}
     >
-      {/* Desktop sidebar — hidden on mobile */}
+      {/* Desktop sidebar - hidden on mobile */}
       <aside
         className="hidden md:flex w-56 flex-col border-r shrink-0"
         style={{ borderColor: "var(--border)", backgroundColor: "var(--card)" }}
@@ -103,16 +105,19 @@ export default async function DashboardLayout({
           >
             Kash
           </span>
-          <form action="/api/auth/logout" method="POST" className="ml-auto">
-            <button
-              type="submit"
-              className="flex items-center gap-1.5 text-sm font-medium hover:opacity-70 transition-opacity"
-              style={{ color: "var(--primary)" }}
-            >
-              <LogOut size={16} />
-              <span className="hidden sm:inline">Sign out</span>
-            </button>
-          </form>
+          <div className="ml-auto flex items-center gap-3">
+            <LanguageSwitcher />
+            <form action="/api/auth/logout" method="POST">
+              <button
+                type="submit"
+                className="flex items-center gap-1.5 text-sm font-medium hover:opacity-70 transition-opacity"
+                style={{ color: "var(--primary)" }}
+              >
+                <LogOut size={16} />
+                <span className="hidden sm:inline">Sign out</span>
+              </button>
+            </form>
+          </div>
         </header>
 
         {/* Email verification banner */}
@@ -134,12 +139,13 @@ export default async function DashboardLayout({
           </div>
         )}
 
-        {/* Page content — extra bottom padding on mobile for nav bar */}
+        {/* Page content - extra bottom padding on mobile for nav bar */}
         <div className="flex-1 p-4 md:p-6 pb-20 md:pb-6">{children}</div>
       </main>
 
       {/* Mobile bottom nav */}
       <MobileNav />
+      <InstallBanner />
     </div>
   );
 }

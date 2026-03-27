@@ -4,11 +4,13 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "@/components/lib/graphql/client";
 import { showSuccess, showError } from "@/components/lib/toast";
+import { useI18n } from "@/components/i18n/I18nProvider";
 import { WalletMembersSection } from "@/components/invitations/WalletMembersSection";
 import { Wallet, WALLET_KIND_LABELS } from "@/components/wallets/types";
 import { WALLETS_QUERY, LEAVE_WALLET_MUTATION } from "@/components/wallets/walletQueries";
 
 export default function SharingPage() {
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const [expandedWalletId, setExpandedWalletId] = useState<string | null>(null);
 
@@ -46,21 +48,21 @@ export default function SharingPage() {
     <div className="max-w-2xl mx-auto space-y-10">
       <div>
         <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--foreground)" }}>
-          Sharing
+          {t("sharing.title")}
         </h1>
         <p className="text-sm opacity-60" style={{ color: "var(--foreground)" }}>
-          Manage access to your wallets and wallets shared with you.
+          {t("sharing.subtitle")}
         </p>
       </div>
 
       {/* Shared with me */}
       <section>
         <h2 className="text-base font-semibold mb-3" style={{ color: "var(--foreground)" }}>
-          Shared with me
+          {t("sharing.sharedWithMe")}
         </h2>
         {sharedWithMe.length === 0 ? (
           <p className="text-sm opacity-50" style={{ color: "var(--foreground)" }}>
-            No wallets have been shared with you yet.
+            {t("sharing.noShared")}
           </p>
         ) : (
           <div className="space-y-2">
@@ -74,28 +76,32 @@ export default function SharingPage() {
               return (
                 <div
                   key={wallet.id}
-                  className="rounded-xl border px-4 py-3 flex items-center gap-4"
+                  className="rounded-xl border px-4 py-3"
                   style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
                 >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate" style={{ color: "var(--foreground)" }}>
-                      {wallet.name}
-                    </p>
-                    <p className="text-xs opacity-50" style={{ color: "var(--foreground)" }}>
-                      {WALLET_KIND_LABELS[wallet.walletKind]} · {wallet.myRole.toLowerCase()}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate" style={{ color: "var(--foreground)" }}>
+                        {wallet.name}
+                      </p>
+                      <p className="text-xs opacity-50" style={{ color: "var(--foreground)" }}>
+                        {WALLET_KIND_LABELS[wallet.walletKind]} · {wallet.myRole.toLowerCase()}
+                      </p>
+                    </div>
+                    <p className="text-sm font-semibold flex-shrink-0" style={{ color: "var(--primary)" }}>
+                      {formatted}
                     </p>
                   </div>
-                  <p className="text-sm font-semibold flex-shrink-0" style={{ color: "var(--primary)" }}>
-                    {formatted}
-                  </p>
-                  <button
-                    onClick={() => leaveMutation.mutate(wallet.id)}
-                    disabled={leaveMutation.isPending}
-                    className="text-xs px-3 py-1.5 rounded-lg font-medium border transition-opacity hover:opacity-70 disabled:opacity-40 flex-shrink-0"
-                    style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
-                  >
-                    Leave
-                  </button>
+                  <div className="flex justify-end mt-2">
+                    <button
+                      onClick={() => leaveMutation.mutate(wallet.id)}
+                      disabled={leaveMutation.isPending}
+                      className="text-xs px-3 py-1.5 rounded-lg font-medium border transition-opacity hover:opacity-70 disabled:opacity-40"
+                      style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+                    >
+                      {t("sharing.leave")}
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -103,14 +109,14 @@ export default function SharingPage() {
         )}
       </section>
 
-      {/* My wallets — manage access */}
+      {/* My wallets - manage access */}
       <section>
         <h2 className="text-base font-semibold mb-3" style={{ color: "var(--foreground)" }}>
-          Manage access
+          {t("sharing.manageAccess")}
         </h2>
         {myWallets.length === 0 ? (
           <p className="text-sm opacity-50" style={{ color: "var(--foreground)" }}>
-            You have no wallets yet.
+            {t("sharing.noWallets")}
           </p>
         ) : (
           <div className="space-y-3">

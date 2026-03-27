@@ -1,4 +1,4 @@
-# GraphQL Layer — Guide for Claude Agents
+# GraphQL Layer - Guide for Claude Agents
 
 ## Purpose
 All GraphQL modules live here. Each domain has its own directory.
@@ -31,7 +31,7 @@ class WalletKind(enum.IntEnum):
     CREDIT = 4
 ```
 
-Always use `IntEnum` — stored as SMALLINT in PostgreSQL via `IntEnumType` from `app/db/types.py`.
+Always use `IntEnum` - stored as SMALLINT in PostgreSQL via `IntEnumType` from `app/db/types.py`.
 
 ## Strawberry Type Pattern
 
@@ -115,9 +115,9 @@ class Mutation(AuthMutations, WalletMutations, NewModuleMutations):
 
 | Module | Phase | Status |
 |--------|-------|--------|
-| `users` | 2 | Done — register, login, me, updateProfile, changePassword |
-| `wallets` | 3 | Done — CRUD, roles, walletMembers, leaveWallet, idempotency key |
-| `transactions` | 4 | Done — create, list, allTransactions, delete, balance, idempotency key |
-| `categories` | 4 | Done — global defaults + per-user, no icon field |
-| `invitations` | 5 | Done — invite, accept, reject, cancel; received/sent queries |
-| `reports` | 6 | Done — dashboardSummary with period/wallet/category filters |
+| `users` | 2 | Done - register, login, me, updateProfile, changePassword |
+| `wallets` | 3 | Done - CRUD, roles, walletMembers, leaveWallet, idempotency key |
+| `transactions` | 4 | Done - create, list, allTransactions, delete, balance, idempotency key |
+| `categories` | 4 | Done - global defaults + per-user, no icon field |
+| `invitations` | 5 | Done - invite, accept, reject, cancel; received/sent queries |
+| `reports` | 6 | Done - dashboardSummary with period/wallet/category filters |

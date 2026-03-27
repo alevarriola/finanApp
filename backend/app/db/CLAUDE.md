@@ -1,4 +1,4 @@
-# DB Layer — Guide for Claude Agents
+# DB Layer - Guide for Claude Agents
 
 ## Purpose
 SQLAlchemy models, engine, and custom column types. Single-schema PostgreSQL.
@@ -31,7 +31,7 @@ class Wallet(BaseModel, HasCreatedAt, HasUpdatedAt, kw_only=True):
     is_archived: Mapped[bool] = mapped_column(default=False)
 ```
 
-## IntEnumType — Enum as SMALLINT
+## IntEnumType - Enum as SMALLINT
 
 ```python
 from app.db.types import IntEnumType
@@ -64,8 +64,8 @@ members: Mapped[list["WalletMember"]] = relationship(
 Always `init=False` for relationships. Use explicit loading in repositories (not lazy).
 
 ## Lazy Loading Strategies
-- `selectinload()` — use in repositories for 1:N collections
-- `joinedload()` — use for N:1 (single object) relations
+- `selectinload()` - use in repositories for 1:N collections
+- `joinedload()` - use for N:1 (single object) relations
 
 ## Monetary Amounts
 
@@ -76,5 +76,5 @@ amount: Mapped[Decimal] = mapped_column(Numeric(18, 2))
 
 ## Adding a New Model
 1. Create `app/graphql/<module>/models/<model>.py`
-2. No changes needed in `alembic/env.py` — models are auto-discovered via `pkgutil` scan of `app/graphql/**/models/`
+2. No changes needed in `alembic/env.py` - models are auto-discovered via `pkgutil` scan of `app/graphql/**/models/`
 3. Run `uv run alembic revision --autogenerate -m "add <model> table"`

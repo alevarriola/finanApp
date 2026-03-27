@@ -156,7 +156,7 @@ export function WalletMembersSection({ walletId, isOwner }: Props) {
         )}
       </div>
 
-      {/* Invite form — owner only */}
+      {/* Invite form - owner only */}
       {isOwner && (
         <div>
           <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>
@@ -205,7 +205,7 @@ export function WalletMembersSection({ walletId, isOwner }: Props) {
         </div>
       )}
 
-      {/* Pending invitations — owner only */}
+      {/* Pending invitations - owner only */}
       {isOwner && (
         <div>
           <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>

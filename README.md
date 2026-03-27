@@ -1,8 +1,8 @@
-# FinanApp
+# Kash
 
-Personal finance manager. Track accounts/wallets, income, expenses, and balances — shareable with other users.
+Personal finance app. Track wallets, record income and expenses, share accounts with family, and visualize reports with charts.
 
-Self-hosted on a home server.
+**Live:** [kash-py.com](https://kash-py.com)
 
 ---
 
@@ -10,28 +10,34 @@ Self-hosted on a home server.
 
 | Layer | Tech |
 |---|---|
-| Backend | Python · FastAPI · Strawberry GraphQL · SQLAlchemy 2 async · aioinject · Alembic |
-| Frontend | Next.js 15 App Router · React Query 5 · react-hook-form · Zod · Radix UI · Tailwind |
-| Database | PostgreSQL 16 · Redis 7 |
-| Auth | JWT HS256 — access token 24h · refresh token 7d · HttpOnly cookies |
+| Backend | Python 3.13, FastAPI, Strawberry GraphQL, SQLAlchemy 2.0 async, aioinject, Alembic |
+| Frontend | Next.js 15, React Query 5, react-hook-form, Zod, Tailwind CSS, Recharts, Lucide React |
+| Database | PostgreSQL 16, Redis 7 |
+| Auth | JWT HS256, access token 24h, refresh token 7d, HttpOnly cookies |
+| Email | Resend (noreply@kash-py.com) |
+| Deploy | Railway (backend + DB + Redis), Vercel (frontend), Cloudflare (DNS) |
+| PWA | manifest.json + service worker, installable on mobile |
 
 ---
 
-## Project Structure
+## Features
 
-```
-finanApp/
-├── backend/          # GraphQL API (FastAPI + Strawberry)
-├── frontend/         # Next.js 15 App Router UI
-├── docker-compose.yml
-└── ROADMAP.md
-```
+- Multiple wallets (cash, bank, debit, credit) with per-wallet balance
+- Income and expense tracking with categories
+- Dashboard with charts: expenses by category (pie), monthly evolution (area)
+- Multi-currency support (PYG, USD, etc.) with separate dashboards per currency
+- Shared wallets: invite by email with roles (viewer/editor)
+- Email verification via Resend
+- Dark mode (CSS variables, persisted in localStorage)
+- Responsive: desktop sidebar + mobile bottom nav
+- PWA: installable on Android and iOS
+- i18n: English and Spanish with language switcher
 
 ---
 
-## Quick Start
+## Quick Start (local dev)
 
-### 1. Start infrastructure
+### 1. Infrastructure
 
 ```bash
 docker compose up -d
@@ -41,13 +47,13 @@ docker compose up -d
 
 ```bash
 cd backend
-cp .env.example .env          # edit JWT_SECRET at minimum
+cp .env.example .env    # edit JWT_SECRET and RESEND_API_KEY
 uv sync
 uv run alembic upgrade head
 uv run uvicorn app.api.app:create_app --factory --reload --port 8000
 ```
 
-GraphiQL explorer: http://localhost:8000/graphql
+GraphiQL: http://localhost:8000/graphql
 
 ### 3. Frontend
 
@@ -62,51 +68,47 @@ App: http://localhost:3000
 
 ---
 
-## Development
+## Project Structure
 
 ```
-backend/
-├── app/
-│   ├── api/app.py              # App factory
-│   ├── auth/                   # JWT service, AuthInfo
-│   ├── core/
-│   │   ├── config/             # Settings (pydantic-settings)
-│   │   ├── context.py          # Shared per-request ContextVars
-│   │   ├── container.py        # DI container (aioinject)
-│   │   └── middleware/         # GraphQL auth + session middleware
-│   ├── db/                     # SQLAlchemy base models + engine
-│   └── graphql/
-│       ├── schemas/schema.py   # Root schema
-│       └── users/              # User module (model/repo/service/types/queries/mutations)
+finanApp/
+├── backend/
+│   ├── app/
+│   │   ├── api/             # FastAPI app factory
+│   │   ├── auth/            # JWT service, AuthInfo
+│   │   ├── core/            # Config, DI container, middleware, idempotency, email
+│   │   ├── db/              # SQLAlchemy base models + engine
+│   │   └── graphql/         # Domain modules
+│   │       ├── users/       # Auth: register, login, profile, email verification
+│   │       ├── wallets/     # CRUD, roles, members, leave
+│   │       ├── categories/  # Global defaults + per-user custom
+│   │       ├── transactions/ # Income/expense with balance calc
+│   │       ├── invitations/ # Invite, accept, reject, cancel
+│   │       └── reports/     # Dashboard aggregations, multi-currency
+│   ├── alembic/             # Database migrations
+│   └── tests/               # pytest, 96 tests, 54% coverage
+├── frontend/
+│   ├── app/                 # Next.js pages (auth, dashboard, wallets, etc.)
+│   ├── components/          # React components, hooks, i18n, GraphQL client
+│   └── public/              # PWA manifest, icons, service worker
+├── ROADMAP.md               # Phase plan (1-8)
+└── docker-compose.yml       # PostgreSQL + Redis
 ```
-
-### Adding a new domain module
-
-Follow the pattern in `backend/app/graphql/users/`. Each module has:
-- `models/` — SQLAlchemy model
-- `repositories/` — DB access only, `flush()` never `commit()`
-- `services/` — business logic, raises typed exceptions
-- `types/` — Strawberry input/output types
-- `queries/` — `@strawberry.field` resolvers
-- `mutations/` — `@strawberry.mutation` resolvers
-
-Register the new queries/mutations in `backend/app/graphql/schemas/schema.py`.
 
 ---
 
-## Roadmap
-
-See [ROADMAP.md](ROADMAP.md) for the full phase plan.
+## Phases
 
 | Phase | Status |
 |---|---|
-| Phase 1 — Project Structure | ✅ Done |
-| Phase 2 — Authentication | ✅ Done |
-| Phase 3 — Wallets | Pending |
-| Phase 4 — Transactions & Categories | Pending |
-| Phase 5 — Sharing & Invitations | Pending |
-| Phase 6 — Reports & Charts | Pending |
-| Phase 7 — Production Deploy | Pending |
+| 1. Project foundation | Done |
+| 2. Authentication | Done |
+| 3. Wallets | Done |
+| 4. Transactions and categories | Done |
+| 5. Shared wallets and invitations | Done |
+| 6. Dashboard and reports | Done |
+| 7. Production deploy | Done (Railway + Vercel + Cloudflare) |
+| 8. AI chat (planned) | See ROADMAP.md |
 
 ---
 
@@ -114,20 +116,30 @@ See [ROADMAP.md](ROADMAP.md) for the full phase plan.
 
 ### Backend (`backend/.env`)
 
-| Variable | Description | Default |
-|---|---|---|
-| `DATABASE_URL` | PostgreSQL async connection string | — |
-| `REDIS_URL` | Redis connection string | — |
-| `JWT_SECRET` | Secret for signing tokens — **change in production** | — |
-| `JWT_ALGORITHM` | Signing algorithm | `HS256` |
-| `JWT_ACCESS_TOKEN_EXPIRE_HOURS` | Access token lifetime | `24` |
-| `JWT_REFRESH_TOKEN_EXPIRE_DAYS` | Refresh token lifetime | `7` |
-| `ENVIRONMENT` | `dev` / `staging` / `production` | `dev` |
-| `CORS_ORIGINS` | JSON array of allowed origins | `["http://localhost:3000"]` |
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `REDIS_URL` | Redis connection string |
+| `JWT_SECRET` | Secret for signing tokens |
+| `RESEND_API_KEY` | Resend API key for email |
+| `RESEND_FROM_EMAIL` | Sender address (noreply@kash-py.com) |
+| `FRONTEND_URL` | Frontend URL for email links |
+| `ENVIRONMENT` | dev / staging / production |
+| `CORS_ORIGINS` | JSON array of allowed origins |
 
 ### Frontend (`frontend/.env.local`)
 
 | Variable | Description |
 |---|---|
-| `BACKEND_GRAPHQL_URL` | Internal backend URL (server-side only) |
-| `NEXT_PUBLIC_APP_NAME` | App name shown in UI |
+| `BACKEND_GRAPHQL_URL` | Backend GraphQL URL (server-side only) |
+
+---
+
+## Tests
+
+```bash
+cd backend
+uv run pytest           # run all tests
+uv run pytest -v        # verbose
+uv run pytest --tb=short # short tracebacks
+```

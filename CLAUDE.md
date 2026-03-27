@@ -1,4 +1,4 @@
-# Kash — Global Guide for Claude Agents
+# Kash - Global Guide for Claude Agents
 
 ## Project Description
 Personal finance app called **Kash** (domain: kash-py.com). Manage wallets, record income/expenses, view balances, share accounts, and get reports with charts.
@@ -13,16 +13,16 @@ finanApp/
 ```
 
 ## Critical Global Rules
-1. **NEVER** run `alembic upgrade/downgrade` — only create migration files
-2. **NEVER** use `commit()` in repositories — only `flush()`
+1. **NEVER** run `alembic upgrade/downgrade` - only create migration files
+2. **NEVER** use `commit()` in repositories - only `flush()`
 3. **ALWAYS** use Python 3.13 syntax: `list[str]`, `str | None` (not `List`, `Optional`)
 4. **NEVER** add file header docstrings
 5. Repositories: ONLY data access. Services: ONLY business logic
-6. All dependencies injected via `aioinject` — no global state
-7. **ALWAYS** add idempotency keys to create mutations — use `app/core/idempotency.py` with Redis (see `ARCHITECTURE_REFERENCE.md` §25b)
-8. **ALWAYS** use CSS variables for colors — support light/dark themes via `[data-theme="dark"]`
-9. **NEVER** use `pip install` — use `uv add` (backend) or `pnpm add` (frontend)
-10. **NEVER** run `git add/commit` — always give user the commands to copy/paste
+6. All dependencies injected via `aioinject` - no global state
+7. **ALWAYS** add idempotency keys to create mutations - use `app/core/idempotency.py` with Redis (see `ARCHITECTURE_REFERENCE.md` §25b)
+8. **ALWAYS** use CSS variables for colors - support light/dark themes via `[data-theme="dark"]`
+9. **NEVER** use `pip install` - use `uv add` (backend) or `pnpm add` (frontend)
+10. **NEVER** run `git add/commit` - always give user the commands to copy/paste
 
 ## Technology Stack
 - Backend: FastAPI, Strawberry GraphQL, SQLAlchemy 2.0 async, aioinject, Alembic, bcrypt, PyJWT, Resend
@@ -37,6 +37,19 @@ finanApp/
 - Background: `#FFFACA` (cream yellow) / dark: `#0f1117`
 - Primary: `#004F39` (dark green) / dark: `#34d399`
 - Foreground: `#151613` (near black) / dark: `#e4e4e7`
+
+## Deploy
+- Backend: Railway (auto-deploy from GitHub `main` branch)
+- Frontend: Vercel (auto-deploy from GitHub `main` branch)
+- DNS: Cloudflare (kash-py.com)
+- Email: Resend (noreply@kash-py.com, domain verified)
+- Staging branch: `staging` (test before merging to `main`)
+
+## i18n
+- Two languages: English (en) and Spanish (es)
+- Translations in `frontend/components/i18n/locales.ts`
+- Use `useI18n()` hook in Client Components for all user-visible text
+- Language persisted in localStorage, switcher in dashboard header
 
 ## Project Phases
 See [ROADMAP.md](./ROADMAP.md) for current status and pending tasks.

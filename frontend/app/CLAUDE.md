@@ -1,4 +1,4 @@
-# App Router — Guide for Claude Agents
+# App Router - Guide for Claude Agents
 
 ## Route Structure
 
@@ -22,11 +22,14 @@ app/
 │   ├── sharing/page.tsx          # Manage shared wallets + invitations
 │   └── settings/page.tsx         # Profile, password, dark mode toggle
 │
+├── verify-email/page.tsx        # Email verification (uses Suspense for useSearchParams)
+│
 └── api/
-    ├── backend/route.ts          # Proxy → backend GraphQL (POST)
+    ├── backend/route.ts          # Proxy -> backend GraphQL (POST)
     └── auth/
-        ├── login/route.ts        # POST: receives credentials, sets JWT cookie
-        ├── logout/route.ts       # POST: clears cookies
+        ├── login/route.ts        # POST: validates credentials, sets JWT cookies
+        ├── logout/route.ts       # POST: clears cookies, redirects to /
+        ├── resend-verification/  # POST: resends verification email
         └── refresh/route.ts      # POST: renews access token
 ```
 
@@ -66,9 +69,11 @@ export const config = {
 - Transparent to the client
 
 ### Auth Routes
-- `POST /api/auth/login` → validates with backend, sets HttpOnly cookies
-- `POST /api/auth/logout` → clears cookies
-- `GET /api/auth/me` → returns current user data from cookie
+- `POST /api/auth/login` - validates with backend, sets HttpOnly cookies
+- `POST /api/auth/logout` - clears cookies, redirects to `/` using `request.url`
+- `POST /api/auth/resend-verification` - resends email verification, redirects to `/dashboard`
+
+**Important:** Never hardcode `localhost` in redirect URLs. Always use `new URL("/path", request.url)`.
 
 ## Auth Cookies
 ```typescript

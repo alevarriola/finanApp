@@ -1,13 +1,13 @@
-# Backend — Guide for Claude Agents
+# Backend - Guide for Claude Agents
 
 ## Purpose
-GraphQL API for FinanApp. Exposes all business logic via Strawberry GraphQL on top of FastAPI.
+GraphQL API for Kash. Exposes all business logic via Strawberry GraphQL on top of FastAPI.
 
 ## Structure
 ```
 backend/
 ├── app/
-│   ├── api/app.py          # App factory — entry point
+│   ├── api/app.py          # App factory - entry point
 │   ├── auth/               # JWT service, AuthInfo
 │   ├── core/
 │   │   ├── config/         # Settings (pydantic-settings)
@@ -19,9 +19,9 @@ backend/
 │   ├── db/
 │   │   ├── base.py         # BaseModel, HasPrimaryKey, HasCreatedAt, HasUpdatedAt
 │   │   ├── engine.py       # create_engine, session factory
-│   │   └── types.py        # IntEnumType — stores IntEnum as SMALLINT
+│   │   └── types.py        # IntEnumType - stores IntEnum as SMALLINT
 │   └── graphql/
-│       ├── schemas/schema.py   # Root schema — merge all queries/mutations here
+│       ├── schemas/schema.py   # Root schema - merge all queries/mutations here
 │       ├── users/              # Auth: register, login, me
 │       ├── wallets/            # Wallets CRUD with roles + walletMembers query
 │       ├── categories/         # Categories (global defaults + per-user), no icon field
@@ -74,7 +74,7 @@ app/graphql/wallets/
 - Uses `.unique()` on result when collections are loaded
 
 ## Service Rules
-- Does not access `session` directly — uses repositories
+- Does not access `session` directly - uses repositories
 - Contains all business logic and permission checks
 - Raises typed exceptions (`NotFoundError`, `UnauthorizedError`, `DuplicateError`)
 - Receives `auth_info: AuthInfo` via DI for current user context
@@ -102,10 +102,32 @@ if idempotency_key:
     await save_idempotency(user_id, idempotency_key, {"id": str(resource.id)})
 ```
 
+## Email Service (`app/core/email_service.py`)
+- Uses Resend API to send emails (verification, etc.)
+- Verification tokens stored in Redis with 24h TTL
+- Key format: `email_verify:{token}`
+- Functions: `create_verification_token()`, `get_verification_data()`, `send_verification_email()`
+
+## Settings Auto-Fix
+- `Settings.fix_database_url` validator auto-converts `postgresql://` to `postgresql+asyncpg://`
+- This allows Railway's `DATABASE_URL` reference to work without manual editing
+
+## Deploy
+- **Railway**: backend + PostgreSQL + Redis (auto-deploy from GitHub main branch)
+- **Dockerfile**: Python 3.13 + uv, runs `alembic upgrade head` on startup
+- Environment variables set in Railway dashboard
+
+## SQLAlchemy + MappedAsDataclass Warning
+- NEVER use `from __future__ import annotations` in model files
+- NEVER define scalar relationships (many-to-one) with `default=None` on `MappedAsDataclass` models
+  (it clears FK columns during `__init__`). Use JOINs in the repository instead.
+- For forward references in relationships, use string literals: `Mapped["Wallet"]`
+
 ## Adding a New Module (checklist)
 1. Create `app/graphql/<module>/` with full structure
-2. Add model imports to `alembic/env.py` (`from ... import Model` + `_ = (Model,)`)
+2. Add model imports to `tests/conftest.py` (for test DB schema creation)
 3. Register repo and service in `app/core/container.py`
 4. Add queries/mutations to `app/graphql/schemas/schema.py` (Query + Mutation classes)
 5. Add idempotency keys to create mutations (see above)
 6. Run `uv run alembic revision --autogenerate -m "description"`
+7. Write tests in `tests/<module>/`
