@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
   const token = cookieStore.get("access_token")?.value;
   if (!token) {
-    return NextResponse.redirect(new URL("/sign-in", process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"));
+    return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
   await fetch(
@@ -22,7 +22,5 @@ export async function POST() {
     }
   );
 
-  return NextResponse.redirect(
-    new URL("/dashboard", process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000")
-  );
+  return NextResponse.redirect(new URL("/dashboard", request.url));
 }

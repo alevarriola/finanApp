@@ -19,6 +19,7 @@ export interface MonthlyPoint {
 }
 
 export interface DashboardSummary {
+  currency: string;
   totalBalance: number;
   periodIncome: number;
   periodExpense: number;
@@ -32,4 +33,5 @@ export interface DashboardFilters {
   period: ReportPeriod;
   walletId: string | null;
   categoryId: string | null;
+  currency: string | null;
 }

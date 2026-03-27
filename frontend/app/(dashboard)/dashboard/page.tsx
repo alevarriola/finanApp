@@ -18,7 +18,7 @@ import {
 import { graphqlRequest } from "@/components/lib/graphql/client";
 import { WALLETS_QUERY } from "@/components/wallets/walletQueries";
 import { CATEGORIES_QUERY } from "@/components/transactions/transactionQueries";
-import { DASHBOARD_SUMMARY_QUERY } from "@/components/dashboard/reportQueries";
+import { DASHBOARD_SUMMARY_QUERY, AVAILABLE_CURRENCIES_QUERY } from "@/components/dashboard/reportQueries";
 import type { DashboardFilters, DashboardSummary, ReportPeriod } from "@/components/dashboard/types";
 import type { Wallet } from "@/components/wallets/types";
 import type { Category } from "@/components/transactions/types";
@@ -78,6 +78,13 @@ export default function DashboardPage() {
     period: "THIS_MONTH",
     walletId: null,
     categoryId: null,
+    currency: null,
+  });
+
+  const { data: currenciesData } = useQuery({
+    queryKey: ["availableCurrencies"],
+    queryFn: () => graphqlRequest<{ availableCurrencies: string[] }>(AVAILABLE_CURRENCIES_QUERY),
+    staleTime: 60_000,
   });
 
   const { data: walletsData } = useQuery({
@@ -102,20 +109,18 @@ export default function DashboardPage() {
             period: filters.period,
             walletId: filters.walletId ?? null,
             categoryId: filters.categoryId ?? null,
+            currency: filters.currency ?? null,
           },
         }
       ),
   });
 
+  const currencies = currenciesData?.availableCurrencies ?? [];
   const wallets = walletsData?.wallets ?? [];
   const categories = catData?.categories ?? [];
   const summary = summaryData?.dashboardSummary;
 
-  // Detect currency from selected wallet or first wallet
-  const activeCurrency =
-    wallets.find((w) => w.id === filters.walletId)?.currency ??
-    wallets[0]?.currency ??
-    "PYG";
+  const activeCurrency = summary?.currency ?? filters.currency ?? currencies[0] ?? "PYG";
 
   const net = (summary?.periodIncome ?? 0) - (summary?.periodExpense ?? 0);
 
@@ -145,6 +150,27 @@ export default function DashboardPage() {
           Your financial overview.
         </p>
       </div>
+
+      {/* Currency tabs */}
+      {currencies.length > 1 && (
+        <div className="flex gap-2">
+          {currencies.map((c) => (
+            <button
+              key={c}
+              onClick={() => setFilters((f) => ({ ...f, currency: c, walletId: null }))}
+              className="px-4 py-1.5 rounded-lg text-sm font-medium transition-opacity"
+              style={{
+                backgroundColor: (filters.currency ?? currencies[0]) === c ? "var(--primary)" : "var(--card)",
+                color: (filters.currency ?? currencies[0]) === c ? "var(--primary-foreground)" : "var(--foreground)",
+                borderWidth: 1,
+                borderColor: "var(--border)",
+              }}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2">

@@ -162,43 +162,45 @@ export function WalletMembersSection({ walletId, isOwner }: Props) {
           <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>
             Invite someone
           </h3>
-          <form onSubmit={handleInvite} className="flex gap-2">
+          <form onSubmit={handleInvite} className="space-y-2">
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email address"
-              className="flex-1 text-sm rounded-lg border px-3 py-2 outline-none focus:ring-1"
+              className="w-full text-sm rounded-lg border px-3 py-2 outline-none focus:ring-1"
               style={{
                 backgroundColor: "var(--input)",
                 borderColor: "var(--border)",
                 color: "var(--foreground)",
               }}
             />
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value as "EDITOR" | "VIEWER")}
-              className="text-sm rounded-lg border px-2 py-2 outline-none"
-              style={{
-                backgroundColor: "var(--input)",
-                borderColor: "var(--border)",
-                color: "var(--foreground)",
-              }}
-            >
-              <option value="VIEWER">Viewer</option>
-              <option value="EDITOR">Editor</option>
-            </select>
-            <button
-              type="submit"
-              disabled={inviteMutation.isPending || !email.trim()}
-              className="px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-40"
-              style={{
-                backgroundColor: "var(--primary)",
-                color: "var(--primary-foreground)",
-              }}
+            <div className="flex gap-2">
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value as "EDITOR" | "VIEWER")}
+                className="flex-1 text-sm rounded-lg border px-2 py-2 outline-none"
+                style={{
+                  backgroundColor: "var(--input)",
+                  borderColor: "var(--border)",
+                  color: "var(--foreground)",
+                }}
+              >
+                <option value="VIEWER">Viewer</option>
+                <option value="EDITOR">Editor</option>
+              </select>
+              <button
+                type="submit"
+                disabled={inviteMutation.isPending || !email.trim()}
+                className="flex-1 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-40"
+                style={{
+                  backgroundColor: "var(--primary)",
+                  color: "var(--primary-foreground)",
+                }}
             >
               Invite
             </button>
+            </div>
           </form>
         </div>
       )}

@@ -23,6 +23,7 @@ class MonthlyPoint:
 
 @strawberry.type
 class DashboardSummary:
+    currency: str
     total_balance: Decimal
     period_income: Decimal
     period_expense: Decimal
@@ -37,3 +38,4 @@ class DashboardFiltersInput:
     period: ReportPeriod = ReportPeriod.THIS_MONTH
     wallet_id: uuid.UUID | None = None
     category_id: uuid.UUID | None = None
+    currency: str | None = None

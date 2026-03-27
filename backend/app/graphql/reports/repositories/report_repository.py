@@ -24,6 +24,7 @@ class ReportRepository:
         wallet_id: uuid.UUID | None,
         category_id: uuid.UUID | None,
         kind: TransactionKind,
+        currency: str | None = None,
     ):
         stmt = (
             select(func.coalesce(func.sum(Transaction.amount), Decimal(0)))
@@ -41,10 +42,23 @@ class ReportRepository:
             stmt = stmt.where(Transaction.wallet_id == wallet_id)
         if category_id:
             stmt = stmt.where(Transaction.category_id == category_id)
+        if currency:
+            stmt = stmt.where(Wallet.currency == currency)
         return stmt
 
+    async def get_user_currencies(self, user_id: uuid.UUID) -> list[str]:
+        stmt = (
+            select(Wallet.currency)
+            .join(WalletMember, Wallet.id == WalletMember.wallet_id)
+            .where(WalletMember.user_id == user_id, Wallet.is_archived.is_(False))
+            .distinct()
+            .order_by(Wallet.currency)
+        )
+        rows = (await self.session.execute(stmt)).scalars().all()
+        return list(rows)
+
     async def get_total_balance(
-        self, user_id: uuid.UUID, wallet_id: uuid.UUID | None = None
+        self, user_id: uuid.UUID, wallet_id: uuid.UUID | None = None, currency: str | None = None
     ) -> Decimal:
         initial_stmt = (
             select(func.coalesce(func.sum(Wallet.initial_balance), Decimal(0)))
@@ -53,6 +67,8 @@ class ReportRepository:
         )
         if wallet_id:
             initial_stmt = initial_stmt.where(Wallet.id == wallet_id)
+        if currency:
+            initial_stmt = initial_stmt.where(Wallet.currency == currency)
 
         income_stmt = (
             select(func.coalesce(func.sum(Transaction.amount), Decimal(0)))
@@ -77,6 +93,9 @@ class ReportRepository:
         if wallet_id:
             income_stmt = income_stmt.where(Transaction.wallet_id == wallet_id)
             expense_stmt = expense_stmt.where(Transaction.wallet_id == wallet_id)
+        if currency:
+            income_stmt = income_stmt.where(Wallet.currency == currency)
+            expense_stmt = expense_stmt.where(Wallet.currency == currency)
 
         initial = (await self.session.execute(initial_stmt)).scalar() or Decimal(0)
         income = (await self.session.execute(income_stmt)).scalar() or Decimal(0)
@@ -90,15 +109,16 @@ class ReportRepository:
         end: datetime.date,
         wallet_id: uuid.UUID | None = None,
         category_id: uuid.UUID | None = None,
+        currency: str | None = None,
     ) -> tuple[Decimal, Decimal]:
         income = (
             await self.session.execute(
-                self._base_tx_stmt(user_id, start, end, wallet_id, category_id, TransactionKind.INCOME)
+                self._base_tx_stmt(user_id, start, end, wallet_id, category_id, TransactionKind.INCOME, currency)
             )
         ).scalar() or Decimal(0)
         expense = (
             await self.session.execute(
-                self._base_tx_stmt(user_id, start, end, wallet_id, category_id, TransactionKind.EXPENSE)
+                self._base_tx_stmt(user_id, start, end, wallet_id, category_id, TransactionKind.EXPENSE, currency)
             )
         ).scalar() or Decimal(0)
         return income, expense
@@ -109,6 +129,7 @@ class ReportRepository:
         start: datetime.date,
         end: datetime.date,
         wallet_id: uuid.UUID | None = None,
+        currency: str | None = None,
     ) -> list[tuple]:
         stmt = (
             select(
@@ -130,6 +151,8 @@ class ReportRepository:
         )
         if wallet_id:
             stmt = stmt.where(Transaction.wallet_id == wallet_id)
+        if currency:
+            stmt = stmt.where(Wallet.currency == currency)
 
         stmt = stmt.group_by(Category.id, Category.name, Category.color).order_by(
             func.sum(Transaction.amount).desc()
@@ -142,6 +165,7 @@ class ReportRepository:
         start: datetime.date,
         wallet_id: uuid.UUID | None = None,
         category_id: uuid.UUID | None = None,
+        currency: str | None = None,
     ) -> list[tuple]:
         month_col = func.date_trunc("month", Transaction.date).label("month")
         stmt = (
@@ -159,6 +183,8 @@ class ReportRepository:
             stmt = stmt.where(Transaction.wallet_id == wallet_id)
         if category_id:
             stmt = stmt.where(Transaction.category_id == category_id)
+        if currency:
+            stmt = stmt.where(Wallet.currency == currency)
         stmt = stmt.group_by(month_col).order_by(month_col)
         return list((await self.session.execute(stmt)).all())
 
@@ -168,6 +194,7 @@ class ReportRepository:
         start: datetime.date,
         wallet_id: uuid.UUID | None = None,
         category_id: uuid.UUID | None = None,
+        currency: str | None = None,
     ) -> list[tuple]:
         month_col = func.date_trunc("month", Transaction.date).label("month")
         stmt = (
@@ -185,5 +212,7 @@ class ReportRepository:
             stmt = stmt.where(Transaction.wallet_id == wallet_id)
         if category_id:
             stmt = stmt.where(Transaction.category_id == category_id)
+        if currency:
+            stmt = stmt.where(Wallet.currency == currency)
         stmt = stmt.group_by(month_col).order_by(month_col)
         return list((await self.session.execute(stmt)).all())

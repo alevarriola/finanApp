@@ -1,6 +1,7 @@
 export const DASHBOARD_SUMMARY_QUERY = `
   query GetDashboardSummary($filters: DashboardFiltersInput!) {
     dashboardSummary(filters: $filters) {
+      currency
       totalBalance
       periodIncome
       periodExpense
@@ -18,5 +19,11 @@ export const DASHBOARD_SUMMARY_QUERY = `
         expense
       }
     }
+  }
+`;
+
+export const AVAILABLE_CURRENCIES_QUERY = `
+  query GetAvailableCurrencies {
+    availableCurrencies
   }
 `;

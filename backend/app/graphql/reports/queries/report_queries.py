@@ -16,3 +16,11 @@ class ReportQueries:
         service: Injected[ReportService],
     ) -> DashboardSummary:
         return await service.get_dashboard_summary(filters)
+
+    @strawberry.field
+    @inject
+    async def available_currencies(
+        self,
+        service: Injected[ReportService],
+    ) -> list[str]:
+        return await service.get_available_currencies()

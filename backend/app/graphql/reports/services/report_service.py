@@ -78,25 +78,34 @@ class ReportService:
         self.repository = repository
         self.auth_info = auth_info
 
+    async def get_available_currencies(self) -> list[str]:
+        return await self.repository.get_user_currencies(self.auth_info.user_id)
+
     async def get_dashboard_summary(self, filters: DashboardFiltersInput) -> DashboardSummary:
         user_id = self.auth_info.user_id
         wallet_id: uuid.UUID | None = filters.wallet_id
         category_id: uuid.UUID | None = filters.category_id
+        currency: str | None = filters.currency
         start, end = _get_date_range(filters.period)
         monthly_start = _six_months_start()
 
-        total_balance = await self.repository.get_total_balance(user_id, wallet_id)
+        # Auto-detect currency if not specified
+        if not currency and not wallet_id:
+            currencies = await self.repository.get_user_currencies(user_id)
+            currency = currencies[0] if currencies else "PYG"
+
+        total_balance = await self.repository.get_total_balance(user_id, wallet_id, currency)
         income, expense = await self.repository.get_period_stats(
-            user_id, start, end, wallet_id, category_id
+            user_id, start, end, wallet_id, category_id, currency
         )
         cat_rows = await self.repository.get_expenses_by_category(
-            user_id, start, end, wallet_id
+            user_id, start, end, wallet_id, currency
         )
         income_rows = await self.repository.get_monthly_income(
-            user_id, monthly_start, wallet_id, category_id
+            user_id, monthly_start, wallet_id, category_id, currency
         )
         expense_rows = await self.repository.get_monthly_expense(
-            user_id, monthly_start, wallet_id, category_id
+            user_id, monthly_start, wallet_id, category_id, currency
         )
 
         expenses_by_category = [
@@ -111,6 +120,7 @@ class ReportService:
         monthly_evolution = _build_monthly_evolution(income_rows, expense_rows)
 
         return DashboardSummary(
+            currency=currency or "PYG",
             total_balance=total_balance,
             period_income=income,
             period_expense=expense,
