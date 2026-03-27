@@ -12,6 +12,7 @@ import {
   INVITE_USER_MUTATION,
   CANCEL_INVITATION_MUTATION,
 } from "./invitationQueries";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 interface WalletMember {
   userId: string;
@@ -27,14 +28,11 @@ interface Props {
   currentUserId?: string;
 }
 
-const ROLE_LABELS: Record<WalletRole, string> = {
-  OWNER: "Owner",
-  EDITOR: "Editor",
-  VIEWER: "Viewer",
-};
+import type { TranslationKey } from "@/components/i18n/locales";
 
 export function WalletMembersSection({ walletId, isOwner }: Props) {
   const queryClient = useQueryClient();
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"EDITOR" | "VIEWER">("VIEWER");
 
@@ -63,7 +61,7 @@ export function WalletMembersSection({ walletId, isOwner }: Props) {
       graphqlRequest(INVITE_USER_MUTATION, { input }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sentInvitations", walletId] });
-      showSuccess("Invitation sent");
+      showSuccess(t("toast.invitationSent"));
       setEmail("");
     },
     onError: showError,
@@ -74,7 +72,7 @@ export function WalletMembersSection({ walletId, isOwner }: Props) {
       graphqlRequest(CANCEL_INVITATION_MUTATION, { invitationId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sentInvitations", walletId] });
-      showSuccess("Invitation cancelled");
+      showSuccess(t("toast.invitationCancelled"));
     },
     onError: showError,
   });
@@ -95,7 +93,7 @@ export function WalletMembersSection({ walletId, isOwner }: Props) {
       {/* Members list */}
       <div>
         <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>
-          Members
+          {t("sharing.members")}
         </h3>
         {membersLoading ? (
           <div className="space-y-2">
@@ -148,7 +146,7 @@ export function WalletMembersSection({ walletId, isOwner }: Props) {
                         : "var(--foreground)",
                   }}
                 >
-                  {ROLE_LABELS[member.role]}
+                  {t(("role." + member.role) as TranslationKey)}
                 </span>
               </div>
             ))}
@@ -160,14 +158,14 @@ export function WalletMembersSection({ walletId, isOwner }: Props) {
       {isOwner && (
         <div>
           <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>
-            Invite someone
+            {t("sharing.inviteSomeone")}
           </h3>
           <form onSubmit={handleInvite} className="space-y-2">
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email address"
+              placeholder={t("sharing.emailPlaceholder")}
               className="w-full text-sm rounded-lg border px-3 py-2 outline-none focus:ring-1"
               style={{
                 backgroundColor: "var(--input)",
@@ -198,7 +196,7 @@ export function WalletMembersSection({ walletId, isOwner }: Props) {
                   color: "var(--primary-foreground)",
                 }}
             >
-              Invite
+              {t("sharing.invite")}
             </button>
             </div>
           </form>
@@ -209,13 +207,13 @@ export function WalletMembersSection({ walletId, isOwner }: Props) {
       {isOwner && (
         <div>
           <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>
-            Pending invitations
+            {t("sharing.pendingInvitations")}
           </h3>
           {sentLoading ? (
             <div className="h-10 rounded-xl animate-pulse" style={{ backgroundColor: "var(--muted)" }} />
           ) : pendingInvitations.length === 0 ? (
             <p className="text-xs opacity-50" style={{ color: "var(--foreground)" }}>
-              No pending invitations
+              {t("sharing.noPending")}
             </p>
           ) : (
             <div className="space-y-2">
@@ -233,7 +231,7 @@ export function WalletMembersSection({ walletId, isOwner }: Props) {
                       {inv.invitedEmail}
                     </p>
                     <p className="text-xs opacity-50" style={{ color: "var(--foreground)" }}>
-                      as {inv.role.toLowerCase()}
+                      {t("invitations.asRole")} {inv.role.toLowerCase()}
                     </p>
                   </div>
                   <button
@@ -245,7 +243,7 @@ export function WalletMembersSection({ walletId, isOwner }: Props) {
                       color: "var(--foreground)",
                     }}
                   >
-                    Cancel
+                    {t("common.cancel")}
                   </button>
                 </div>
               ))}

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "@/components/lib/graphql/client";
 import { showSuccess, showError } from "@/components/lib/toast";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 const ME_QUERY = `query { me { id email name createdAt } }`;
 
@@ -47,6 +48,7 @@ function useTheme() {
 
 export default function SettingsPage() {
   const queryClient = useQueryClient();
+  const { t, locale } = useI18n();
   const { theme, setTheme } = useTheme();
 
   const { data: meData, isLoading } = useQuery({
@@ -68,7 +70,7 @@ export default function SettingsPage() {
       graphqlRequest(UPDATE_PROFILE_MUTATION, { name: newName }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["me"] });
-      showSuccess("Profile updated");
+      showSuccess(t("toast.profileUpdated"));
     },
     onError: showError,
   });
@@ -80,7 +82,7 @@ export default function SettingsPage() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      showSuccess("Password changed");
+      showSuccess(t("toast.passwordChanged"));
     },
     onError: showError,
   });
@@ -127,10 +129,10 @@ export default function SettingsPage() {
     <div className="max-w-xl mx-auto space-y-8">
       <div>
         <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--foreground)" }}>
-          Settings
+          {t("settings.title")}
         </h1>
         <p className="text-sm opacity-60" style={{ color: "var(--foreground)" }}>
-          Manage your account.
+          {t("settings.subtitle")}
         </p>
       </div>
 
@@ -140,12 +142,12 @@ export default function SettingsPage() {
         style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
       >
         <h2 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-          Profile
+          {t("settings.profile")}
         </h2>
         <form onSubmit={handleProfileSubmit} className="space-y-3">
           <div>
             <label className="text-xs opacity-50 mb-1 block" style={{ color: "var(--foreground)" }}>
-              Email
+              {t("settings.email")}
             </label>
             <input
               type="email"
@@ -157,7 +159,7 @@ export default function SettingsPage() {
           </div>
           <div>
             <label className="text-xs opacity-50 mb-1 block" style={{ color: "var(--foreground)" }}>
-              Name
+              {t("settings.name")}
             </label>
             <input
               type="text"
@@ -173,7 +175,7 @@ export default function SettingsPage() {
             className="px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-40"
             style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
           >
-            Save
+            {t("settings.updateProfile")}
           </button>
         </form>
       </div>
@@ -184,12 +186,12 @@ export default function SettingsPage() {
         style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
       >
         <h2 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-          Change password
+          {t("settings.changePassword")}
         </h2>
         <form onSubmit={handlePasswordSubmit} className="space-y-3">
           <div>
             <label className="text-xs opacity-50 mb-1 block" style={{ color: "var(--foreground)" }}>
-              Current password
+              {t("settings.currentPassword")}
             </label>
             <input
               type="password"
@@ -201,7 +203,7 @@ export default function SettingsPage() {
           </div>
           <div>
             <label className="text-xs opacity-50 mb-1 block" style={{ color: "var(--foreground)" }}>
-              New password
+              {t("settings.newPassword")}
             </label>
             <input
               type="password"
@@ -213,7 +215,7 @@ export default function SettingsPage() {
           </div>
           <div>
             <label className="text-xs opacity-50 mb-1 block" style={{ color: "var(--foreground)" }}>
-              Confirm new password
+              {t("settings.newPassword")}
             </label>
             <input
               type="password"
@@ -229,7 +231,7 @@ export default function SettingsPage() {
             className="px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-40"
             style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
           >
-            Change password
+            {t("settings.changePassword")}
           </button>
         </form>
       </div>
@@ -240,7 +242,7 @@ export default function SettingsPage() {
         style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
       >
         <h2 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-          Appearance
+          {t("settings.appearance")}
         </h2>
         <div className="flex gap-3">
           <button
@@ -252,7 +254,7 @@ export default function SettingsPage() {
               borderColor: theme === "light" ? "var(--primary)" : "var(--border)",
             }}
           >
-            Light
+            {t("settings.light")}
           </button>
           <button
             onClick={() => setTheme("dark")}
@@ -263,7 +265,7 @@ export default function SettingsPage() {
               borderColor: theme === "dark" ? "var(--primary)" : "var(--border)",
             }}
           >
-            Dark
+            {t("settings.dark")}
           </button>
         </div>
       </div>
@@ -274,12 +276,12 @@ export default function SettingsPage() {
         style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
       >
         <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--foreground)" }}>
-          Account
+          {t("settings.account")}
         </h2>
         <p className="text-xs opacity-50" style={{ color: "var(--foreground)" }}>
-          Member since{" "}
+          {t("settings.memberSince")}{" "}
           {user?.createdAt
-            ? new Date(user.createdAt).toLocaleDateString("en-US", {
+            ? new Date(user.createdAt).toLocaleDateString(locale === "es" ? "es-PY" : "en-US", {
                 month: "long",
                 year: "numeric",
               })

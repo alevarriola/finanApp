@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Download, X, Share } from "lucide-react";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -56,6 +57,8 @@ export function InstallBanner() {
     sessionStorage.setItem("pwa-dismissed", "1");
   }
 
+  const { t } = useI18n();
+
   if (dismissed) return null;
   if (!deferredPrompt && !showIOSHint) return null;
 
@@ -83,10 +86,10 @@ export function InstallBanner() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-              Install Kash
+              {t("install.title")}
             </p>
             <p className="text-xs opacity-60" style={{ color: "var(--foreground)" }}>
-              Add to your home screen for quick access
+              {t("install.subtitle")}
             </p>
           </div>
           <button
@@ -94,7 +97,7 @@ export function InstallBanner() {
             className="px-3 py-1.5 rounded-lg text-xs font-semibold flex-shrink-0"
             style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
           >
-            Install
+            {t("install.button")}
           </button>
         </div>
       ) : (
@@ -103,11 +106,11 @@ export function InstallBanner() {
           <div className="flex items-center gap-2">
             <Download size={18} style={{ color: "var(--primary)" }} />
             <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-              Install Kash
+              {t("install.title")}
             </p>
           </div>
           <p className="text-xs leading-relaxed opacity-70" style={{ color: "var(--foreground)" }}>
-            Tap <Share size={12} className="inline -mt-0.5" /> <strong>Share</strong> then <strong>"Add to Home Screen"</strong> to install.
+            {t("install.iosHint")}
           </p>
         </div>
       )}

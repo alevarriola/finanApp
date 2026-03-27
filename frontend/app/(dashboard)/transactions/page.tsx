@@ -8,6 +8,7 @@ import { WALLETS_QUERY } from "@/components/wallets/walletQueries";
 import { CATEGORIES_QUERY, DELETE_TRANSACTION_MUTATION } from "@/components/transactions/transactionQueries";
 import type { Transaction, Category, TransactionKind } from "@/components/transactions/types";
 import type { Wallet } from "@/components/wallets/types";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 const ALL_TRANSACTIONS_QUERY = `
   query AllTransactions(
@@ -39,17 +40,18 @@ function formatCurrency(amount: number, currency = "PYG") {
   }).format(amount);
 }
 
-function formatDateLabel(dateStr: string): string {
+function formatDateLabel(dateStr: string, t: (key: string) => string): string {
   const date = new Date(dateStr + "T00:00:00");
   const today = new Date();
   const yesterday = new Date();
   yesterday.setDate(today.getDate() - 1);
-  if (date.toDateString() === today.toDateString()) return "Today";
-  if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
+  if (date.toDateString() === today.toDateString()) return t("transactions.today");
+  if (date.toDateString() === yesterday.toDateString()) return t("transactions.yesterday");
   return date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
 
 export default function TransactionsPage() {
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const [walletId, setWalletId] = useState<string | null>(null);
   const [kind, setKind] = useState<TransactionKind | "">("");
@@ -99,7 +101,7 @@ export default function TransactionsPage() {
 
   const grouped = new Map<string, GlobalTransaction[]>();
   for (const txn of transactions) {
-    const label = formatDateLabel(txn.date);
+    const label = formatDateLabel(txn.date, t as (key: string) => string);
     if (!grouped.has(label)) grouped.set(label, []);
     grouped.get(label)!.push(txn);
   }
@@ -117,10 +119,10 @@ export default function TransactionsPage() {
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--foreground)" }}>
-          Transactions
+          {t("transactions.title")}
         </h1>
         <p className="text-sm opacity-60" style={{ color: "var(--foreground)" }}>
-          All transactions across your wallets.
+          {t("transactions.subtitle")}
         </p>
       </div>
 
@@ -132,7 +134,7 @@ export default function TransactionsPage() {
           className="text-sm rounded-lg border px-3 py-2 outline-none"
           style={selectStyle}
         >
-          <option value="">All wallets</option>
+          <option value="">{t("transactions.allWallets")}</option>
           {wallets.map((w) => (
             <option key={w.id} value={w.id}>{w.name}</option>
           ))}
@@ -144,9 +146,9 @@ export default function TransactionsPage() {
           className="text-sm rounded-lg border px-3 py-2 outline-none"
           style={selectStyle}
         >
-          <option value="">All types</option>
-          <option value="INCOME">Income</option>
-          <option value="EXPENSE">Expense</option>
+          <option value="">{t("transactions.allTypes")}</option>
+          <option value="INCOME">{t("transactions.income")}</option>
+          <option value="EXPENSE">{t("transactions.expense")}</option>
         </select>
 
         <select
@@ -155,7 +157,7 @@ export default function TransactionsPage() {
           className="text-sm rounded-lg border px-3 py-2 outline-none"
           style={selectStyle}
         >
-          <option value="">All categories</option>
+          <option value="">{t("transactions.allCategories")}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
@@ -199,7 +201,7 @@ export default function TransactionsPage() {
       ) : transactions.length === 0 ? (
         <div className="rounded-xl border-2 border-dashed p-10 text-center" style={{ borderColor: "var(--border)" }}>
           <p className="text-sm opacity-50" style={{ color: "var(--foreground)" }}>
-            No transactions found
+            {t("transactions.empty")}
           </p>
         </div>
       ) : (

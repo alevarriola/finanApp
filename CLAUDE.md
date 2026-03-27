@@ -45,11 +45,18 @@ finanApp/
 - Email: Resend (noreply@kash-py.com, domain verified)
 - Staging branch: `staging` (test before merging to `main`)
 
-## i18n
+## i18n (IMPORTANT - read before writing any UI text)
 - Two languages: English (en) and Spanish (es)
 - Translations in `frontend/components/i18n/locales.ts`
-- Use `useI18n()` hook in Client Components for all user-visible text
-- Language persisted in localStorage, switcher in dashboard header
+- **ALWAYS** add both EN and ES translations when creating new user-visible text
+- **ALWAYS** use `const { t } = useI18n()` + `{t("key")}` in Client Components
+- **NEVER** hardcode user-visible English strings in JSX
+- Server Components (layout.tsx) cannot use `useI18n()` - leave those in English
+- For wallet kind labels use `t(("walletKind." + value) as TranslationKey)` pattern
+- Toast messages must also use `t()` (keys: `toast.*`)
+- Spanish translations should be natural, not literal (ej: Wallets = "Cuentas", Transactions = "Movimientos")
+- Language switcher is in: dashboard header, landing nav, auth layout
+- Note: category names come from the DB and are NOT translated via i18n
 
 ## Project Phases
 See [ROADMAP.md](./ROADMAP.md) for current status and pending tasks.

@@ -22,13 +22,15 @@ import { DASHBOARD_SUMMARY_QUERY, AVAILABLE_CURRENCIES_QUERY } from "@/component
 import type { DashboardFilters, DashboardSummary, ReportPeriod } from "@/components/dashboard/types";
 import type { Wallet } from "@/components/wallets/types";
 import type { Category } from "@/components/transactions/types";
+import { useI18n } from "@/components/i18n/I18nProvider";
+import type { TranslationKey } from "@/components/i18n/locales";
 
-const PERIOD_LABELS: Record<ReportPeriod, string> = {
-  THIS_MONTH: "This month",
-  LAST_MONTH: "Last month",
-  LAST_3_MONTHS: "Last 3 months",
-  LAST_6_MONTHS: "Last 6 months",
-  THIS_YEAR: "This year",
+const PERIOD_LABEL_KEYS: Record<ReportPeriod, TranslationKey> = {
+  THIS_MONTH: "dashboard.thisMonth",
+  LAST_MONTH: "dashboard.lastMonth",
+  LAST_3_MONTHS: "dashboard.last3Months",
+  LAST_6_MONTHS: "dashboard.last6Months",
+  THIS_YEAR: "dashboard.thisYear",
 };
 
 const MONTH_LABELS: Record<string, string> = {
@@ -74,6 +76,7 @@ function StatCard({
 }
 
 export default function DashboardPage() {
+  const { t } = useI18n();
   const [filters, setFilters] = useState<DashboardFilters>({
     period: "THIS_MONTH",
     walletId: null,
@@ -124,12 +127,15 @@ export default function DashboardPage() {
 
   const net = (summary?.periodIncome ?? 0) - (summary?.periodExpense ?? 0);
 
+  const incomeLabel = t("chart.income");
+  const expenseLabel = t("chart.expense");
+
   const monthlyChartData = (summary?.monthlyEvolution ?? []).map((p) => {
     const [year, month] = p.month.split("-");
     return {
       name: `${MONTH_LABELS[month]} ${year}`,
-      Income: Number(p.income),
-      Expense: Number(p.expense),
+      [incomeLabel]: Number(p.income),
+      [expenseLabel]: Number(p.expense),
     };
   });
 
@@ -144,10 +150,10 @@ export default function DashboardPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--foreground)" }}>
-          Dashboard
+          {t("dashboard.title")}
         </h1>
         <p className="text-sm opacity-60" style={{ color: "var(--foreground)" }}>
-          Your financial overview.
+          {t("dashboard.subtitle")}
         </p>
       </div>
 
@@ -185,9 +191,9 @@ export default function DashboardPage() {
             color: "var(--foreground)",
           }}
         >
-          {(Object.keys(PERIOD_LABELS) as ReportPeriod[]).map((p) => (
+          {(Object.keys(PERIOD_LABEL_KEYS) as ReportPeriod[]).map((p) => (
             <option key={p} value={p}>
-              {PERIOD_LABELS[p]}
+              {t(PERIOD_LABEL_KEYS[p])}
             </option>
           ))}
         </select>
@@ -205,7 +211,7 @@ export default function DashboardPage() {
             color: "var(--foreground)",
           }}
         >
-          <option value="">All wallets</option>
+          <option value="">{t("dashboard.allWallets")}</option>
           {wallets.map((w) => (
             <option key={w.id} value={w.id}>
               {w.name}
@@ -226,7 +232,7 @@ export default function DashboardPage() {
             color: "var(--foreground)",
           }}
         >
-          <option value="">All categories</option>
+          <option value="">{t("dashboard.allCategories")}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
@@ -249,22 +255,22 @@ export default function DashboardPage() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatCard
-            label="Total balance"
+            label={t("dashboard.totalBalance")}
             value={formatCurrency(summary?.totalBalance ?? 0, activeCurrency)}
             color="var(--primary)"
           />
           <StatCard
-            label={`Income (${PERIOD_LABELS[filters.period].toLowerCase()})`}
+            label={t("dashboard.income")}
             value={formatCurrency(summary?.periodIncome ?? 0, activeCurrency)}
             color="#16a34a"
           />
           <StatCard
-            label={`Expenses (${PERIOD_LABELS[filters.period].toLowerCase()})`}
+            label={t("dashboard.expenses")}
             value={formatCurrency(summary?.periodExpense ?? 0, activeCurrency)}
             color="#dc2626"
           />
           <StatCard
-            label="Net"
+            label={t("dashboard.net")}
             value={formatCurrency(net, activeCurrency)}
             color={net >= 0 ? "#16a34a" : "#dc2626"}
           />
@@ -279,14 +285,14 @@ export default function DashboardPage() {
           style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
         >
           <h2 className="text-sm font-semibold mb-4" style={{ color: "var(--foreground)" }}>
-            Expenses by category
+            {t("dashboard.expensesByCategory")}
           </h2>
           {isLoading ? (
             <div className="h-48 rounded animate-pulse" style={{ backgroundColor: "var(--muted)" }} />
           ) : pieData.length === 0 ? (
             <div className="h-48 flex items-center justify-center">
               <p className="text-sm opacity-40" style={{ color: "var(--foreground)" }}>
-                No expenses for this period
+                {t("dashboard.noExpenses")}
               </p>
             </div>
           ) : (
@@ -330,7 +336,7 @@ export default function DashboardPage() {
           style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
         >
           <h2 className="text-sm font-semibold mb-4" style={{ color: "var(--foreground)" }}>
-            Monthly evolution (last 6 months)
+            {t("dashboard.monthlyEvolution")}
           </h2>
           {isLoading ? (
             <div className="h-48 rounded animate-pulse" style={{ backgroundColor: "var(--muted)" }} />
@@ -379,7 +385,7 @@ export default function DashboardPage() {
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "12px" }} />
                 <Area
                   type="monotone"
-                  dataKey="Income"
+                  dataKey={incomeLabel}
                   stroke="#16a34a"
                   strokeWidth={2}
                   fill="url(#colorIncome)"
@@ -387,7 +393,7 @@ export default function DashboardPage() {
                 />
                 <Area
                   type="monotone"
-                  dataKey="Expense"
+                  dataKey={expenseLabel}
                   stroke="#dc2626"
                   strokeWidth={2}
                   fill="url(#colorExpense)"
@@ -407,7 +413,7 @@ export default function DashboardPage() {
         >
           <div>
             <p className="text-xs opacity-50 mb-0.5" style={{ color: "var(--foreground)" }}>
-              Top expense category
+              {t("dashboard.topCategory")}
             </p>
             <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
               {summary.topExpenseCategory}

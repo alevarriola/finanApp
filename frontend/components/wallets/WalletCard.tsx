@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Wallet, WALLET_KIND_LABELS } from "./types";
+import { useI18n } from "@/components/i18n/I18nProvider";
+import type { TranslationKey } from "@/components/i18n/locales";
+import { Wallet } from "./types";
 
 interface WalletCardProps {
   wallet: Wallet;
@@ -10,6 +12,7 @@ interface WalletCardProps {
 }
 
 export function WalletCard({ wallet, onEdit, onArchive }: WalletCardProps) {
+  const { t } = useI18n();
   const canEdit = wallet.myRole === "OWNER" || wallet.myRole === "EDITOR";
   const canArchive = wallet.myRole === "OWNER";
 
@@ -31,7 +34,7 @@ export function WalletCard({ wallet, onEdit, onArchive }: WalletCardProps) {
               {wallet.name}
             </p>
             <p className="text-xs opacity-50" style={{ color: "var(--foreground)" }}>
-              {WALLET_KIND_LABELS[wallet.walletKind]}
+              {t(("walletKind." + wallet.walletKind) as TranslationKey)}
             </p>
           </div>
         </div>
@@ -44,7 +47,7 @@ export function WalletCard({ wallet, onEdit, onArchive }: WalletCardProps) {
                 className="text-xs px-2 py-1 rounded-md hover:opacity-70 transition-opacity"
                 style={{ color: "var(--primary)" }}
               >
-                Edit
+                {t("wallets.edit")}
               </button>
             )}
             {canArchive && (
@@ -53,7 +56,7 @@ export function WalletCard({ wallet, onEdit, onArchive }: WalletCardProps) {
                 className="text-xs px-2 py-1 rounded-md hover:opacity-70 transition-opacity opacity-40"
                 style={{ color: "var(--foreground)" }}
               >
-                Archive
+                {t("wallets.archive")}
               </button>
             )}
           </div>
@@ -62,7 +65,7 @@ export function WalletCard({ wallet, onEdit, onArchive }: WalletCardProps) {
 
       <Link href={`/wallets/${wallet.id}`} className="block">
         <p className="text-xs opacity-50 mb-0.5" style={{ color: "var(--foreground)" }}>
-          Balance
+          {t("wallets.balance")}
         </p>
         <p className="text-xl font-bold" style={{ color: "var(--primary)" }}>
           {formattedBalance}

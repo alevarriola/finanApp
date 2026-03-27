@@ -10,6 +10,15 @@ const en = {
   "common.signOut": "Sign out",
   "common.signUp": "Create account",
 
+  // Nav
+  "nav.dashboard": "Dashboard",
+  "nav.wallets": "Wallets",
+  "nav.transactions": "Transactions",
+  "nav.sharing": "Sharing",
+  "nav.settings": "Settings",
+  "nav.home": "Home",
+  "nav.activity": "Activity",
+
   // Landing
   "landing.badge": "Personal finance, simplified",
   "landing.title1": "Take control of",
@@ -28,6 +37,8 @@ const en = {
   "landing.features.security.desc": "JWT auth, email verification, and encrypted passwords.",
   "landing.features.mobile.title": "Works on mobile",
   "landing.features.mobile.desc": "Install as an app on your phone. No app store needed.",
+  "landing.everythingTitle": "Everything you need",
+  "landing.everythingSubtitle": "Simple tools to manage your personal finances without the complexity.",
   "landing.readyTitle": "Ready to start?",
   "landing.readySubtitle": "Free to use. No credit card required.",
   "landing.readyCta": "Create your account",
@@ -54,12 +65,12 @@ const en = {
   "dashboard.title": "Dashboard",
   "dashboard.subtitle": "Your financial overview.",
   "dashboard.totalBalance": "Total balance",
-  "dashboard.income": "Income",
-  "dashboard.expenses": "Expenses",
+  "dashboard.income": "Income (this month)",
+  "dashboard.expenses": "Expenses (this month)",
   "dashboard.net": "Net",
   "dashboard.expensesByCategory": "Expenses by category",
-  "dashboard.monthlyEvolution": "Monthly evolution",
-  "dashboard.topCategory": "Top expense",
+  "dashboard.monthlyEvolution": "Monthly evolution (last 6 months)",
+  "dashboard.topCategory": "Top expense category",
   "dashboard.noExpenses": "No expenses this period",
   "dashboard.noData": "No data for this period",
   "dashboard.allWallets": "All wallets",
@@ -72,10 +83,12 @@ const en = {
 
   // Wallets
   "wallets.title": "Wallets",
-  "wallets.create": "New wallet",
+  "wallets.subtitle": "Your accounts and cards.",
+  "wallets.create": "+ New",
   "wallets.empty": "No wallets yet. Create your first one!",
   "wallets.balance": "Balance",
   "wallets.backToWallets": "Wallets",
+  "wallets.transactions": "Transactions",
 
   // Transactions
   "transactions.title": "Transactions",
@@ -87,6 +100,8 @@ const en = {
   "transactions.allWallets": "All wallets",
   "transactions.allTypes": "All types",
   "transactions.allCategories": "All categories",
+  "transactions.income": "Income",
+  "transactions.expense": "Expense",
 
   // Sharing
   "sharing.title": "Sharing",
@@ -109,9 +124,11 @@ const en = {
   "settings.name": "Name",
   "settings.email": "Email",
   "settings.updateProfile": "Update profile",
+  "settings.updating": "Updating...",
   "settings.changePassword": "Change password",
   "settings.currentPassword": "Current password",
   "settings.newPassword": "New password",
+  "settings.changingPassword": "Changing...",
   "settings.appearance": "Appearance",
   "settings.theme": "Theme",
   "settings.light": "Light",
@@ -127,36 +144,121 @@ const en = {
   "install.subtitle": "Add to your home screen for quick access",
   "install.button": "Install",
   "install.iosHint": "Tap Share then \"Add to Home Screen\" to install.",
+
+  // Toasts
+  "toast.welcome": "Welcome back!",
+  "toast.welcomeNew": "Welcome",
+  "toast.transactionAdded": "Transaction added",
+  "toast.transactionDeleted": "Transaction deleted",
+  "toast.walletCreated": "Wallet created",
+  "toast.profileUpdated": "Profile updated",
+  "toast.passwordChanged": "Password changed",
+  "toast.invitationSent": "Invitation sent",
+  "toast.invitationCancelled": "Invitation cancelled",
+  "toast.invitationAccepted": "Invitation accepted",
+  "toast.invitationRejected": "Invitation rejected",
+  "toast.leftWallet": "You left the wallet",
+
+  // Wallet kinds
+  "walletKind.CASH": "Cash",
+  "walletKind.BANK": "Bank Account",
+  "walletKind.DEBIT": "Debit Card",
+  "walletKind.CREDIT": "Credit Card",
+
+  // Chart labels
+  "chart.income": "Income",
+  "chart.expense": "Expense",
+
+  // Wallet detail
+  "wallets.edit": "Edit",
+  "wallets.archive": "Archive",
+  "wallets.currency": "Currency",
+  "wallets.notFound": "Wallet not found.",
+
+  // Settings extras
+  "settings.subtitle": "Manage your account.",
+  "settings.account": "Account",
+  "settings.memberSince": "Member since",
+
+  // Invitations section (dashboard)
+  "invitations.pending": "Pending invitations",
+  "invitations.noPending": "No pending invitations",
+  "invitations.accept": "Accept",
+  "invitations.reject": "Reject",
+  "invitations.invitedBy": "invited by",
+  "invitations.asRole": "as",
+
+  // Wallet form modal
+  "walletForm.createTitle": "New Wallet",
+  "walletForm.editTitle": "Edit Wallet",
+  "walletForm.name": "Name",
+  "walletForm.namePlaceholder": "e.g. Savings Account",
+  "walletForm.type": "Type",
+  "walletForm.currency": "Currency",
+  "walletForm.initialBalance": "Initial Balance",
+  "walletForm.create": "Create",
+  "walletForm.save": "Save Changes",
+
+  // Transaction form modal
+  "txnForm.title": "New Transaction",
+  "txnForm.expense": "Expense",
+  "txnForm.income": "Income",
+  "txnForm.amount": "Amount",
+  "txnForm.date": "Date",
+  "txnForm.category": "Category",
+  "txnForm.noCategory": "No category",
+  "txnForm.description": "Description",
+  "txnForm.descPlaceholder": "Optional note",
+  "txnForm.add": "Add",
+
+  // Roles
+  "role.OWNER": "Owner",
+  "role.EDITOR": "Editor",
+  "role.VIEWER": "Viewer",
+
+  // Wallets subtitle
+  "wallets.count": "accounts",
 } as const;
 
-const es: typeof en = {
+const es: Record<keyof typeof en, string> = {
   // Common
   "common.save": "Guardar",
   "common.cancel": "Cancelar",
   "common.delete": "Eliminar",
   "common.loading": "Cargando...",
   "common.signIn": "Iniciar sesion",
-  "common.signOut": "Cerrar sesion",
+  "common.signOut": "Salir",
   "common.signUp": "Crear cuenta",
 
+  // Nav (natural, no literal)
+  "nav.dashboard": "Dashboard",
+  "nav.wallets": "Cuentas",
+  "nav.transactions": "Movimientos",
+  "nav.sharing": "Compartir",
+  "nav.settings": "Ajustes",
+  "nav.home": "Inicio",
+  "nav.activity": "Movimientos",
+
   // Landing
-  "landing.badge": "Finanzas personales, simplificadas",
+  "landing.badge": "Finanzas personales, simple",
   "landing.title1": "Toma el control de",
   "landing.title2": "tu dinero",
-  "landing.subtitle": "Gestiona billeteras, categoriza gastos, comparte cuentas con tu familia y mira exactamente a donde va tu plata.",
-  "landing.cta": "Comenzar gratis",
-  "landing.features.wallets.title": "Multiples billeteras",
-  "landing.features.wallets.desc": "Efectivo, cuentas bancarias, tarjetas debito y credito - todo en un lugar.",
+  "landing.subtitle": "Gestiona tus cuentas, categoriza gastos, comparte con tu familia y mira exactamente a donde va tu dinero.",
+  "landing.cta": "Empezar gratis",
+  "landing.features.wallets.title": "Multiples cuentas",
+  "landing.features.wallets.desc": "Efectivo, cuentas bancarias, tarjetas debito y credito, todo en un lugar.",
   "landing.features.transactions.title": "Ingresos y gastos",
-  "landing.features.transactions.desc": "Registra transacciones en segundos. Ve tu saldo actualizado al instante.",
+  "landing.features.transactions.desc": "Registra movimientos en segundos. Tu saldo se actualiza al instante.",
   "landing.features.reports.title": "Reportes y graficos",
-  "landing.features.reports.desc": "Entiende a donde va tu dinero con graficos visuales.",
-  "landing.features.sharing.title": "Billeteras compartidas",
-  "landing.features.sharing.desc": "Invita a familia o amigos a colaborar en cuentas compartidas.",
-  "landing.features.security.title": "Seguridad integrada",
-  "landing.features.security.desc": "Autenticacion JWT, verificacion de email y contraseñas encriptadas.",
+  "landing.features.reports.desc": "Entiende a donde va tu plata con graficos claros.",
+  "landing.features.sharing.title": "Cuentas compartidas",
+  "landing.features.sharing.desc": "Invita a familia o amigos para manejar cuentas juntos.",
+  "landing.features.security.title": "Seguridad",
+  "landing.features.security.desc": "Autenticacion segura, verificacion de email y contraseñas encriptadas.",
   "landing.features.mobile.title": "Funciona en celular",
-  "landing.features.mobile.desc": "Instala como app en tu telefono. Sin App Store.",
+  "landing.features.mobile.desc": "Instala como app en tu telefono. Sin Play Store.",
+  "landing.everythingTitle": "Todo lo que necesitas",
+  "landing.everythingSubtitle": "Herramientas simples para manejar tus finanzas sin complicaciones.",
   "landing.readyTitle": "Listo para empezar?",
   "landing.readySubtitle": "Gratis. Sin tarjeta de credito.",
   "landing.readyCta": "Crea tu cuenta",
@@ -167,7 +269,7 @@ const es: typeof en = {
   "auth.signIn.email": "Email",
   "auth.signIn.password": "Contraseña",
   "auth.signIn.submit": "Iniciar sesion",
-  "auth.signIn.submitting": "Iniciando sesion...",
+  "auth.signIn.submitting": "Entrando...",
   "auth.signIn.noAccount": "No tenes cuenta?",
   "auth.signIn.createOne": "Crea una",
   "auth.signUp.title": "Crea tu cuenta",
@@ -177,21 +279,21 @@ const es: typeof en = {
   "auth.signUp.confirmPassword": "Confirmar contraseña",
   "auth.signUp.submit": "Crear cuenta",
   "auth.signUp.submitting": "Creando cuenta...",
-  "auth.signUp.hasAccount": "Ya tenes una cuenta?",
+  "auth.signUp.hasAccount": "Ya tenes cuenta?",
 
   // Dashboard
   "dashboard.title": "Dashboard",
   "dashboard.subtitle": "Tu resumen financiero.",
   "dashboard.totalBalance": "Saldo total",
-  "dashboard.income": "Ingresos",
-  "dashboard.expenses": "Gastos",
+  "dashboard.income": "Ingresos (este mes)",
+  "dashboard.expenses": "Gastos (este mes)",
   "dashboard.net": "Neto",
   "dashboard.expensesByCategory": "Gastos por categoria",
-  "dashboard.monthlyEvolution": "Evolucion mensual",
+  "dashboard.monthlyEvolution": "Evolucion mensual (ultimos 6 meses)",
   "dashboard.topCategory": "Mayor gasto",
   "dashboard.noExpenses": "Sin gastos en este periodo",
   "dashboard.noData": "Sin datos para este periodo",
-  "dashboard.allWallets": "Todas las billeteras",
+  "dashboard.allWallets": "Todas las cuentas",
   "dashboard.allCategories": "Todas las categorias",
   "dashboard.thisMonth": "Este mes",
   "dashboard.lastMonth": "Mes pasado",
@@ -200,47 +302,53 @@ const es: typeof en = {
   "dashboard.thisYear": "Este año",
 
   // Wallets
-  "wallets.title": "Billeteras",
-  "wallets.create": "Nueva billetera",
-  "wallets.empty": "Sin billeteras. Crea la primera!",
+  "wallets.title": "Cuentas",
+  "wallets.subtitle": "Tus cuentas y tarjetas.",
+  "wallets.create": "+ Nueva",
+  "wallets.empty": "Sin cuentas todavia. Crea la primera!",
   "wallets.balance": "Saldo",
-  "wallets.backToWallets": "Billeteras",
+  "wallets.backToWallets": "Cuentas",
+  "wallets.transactions": "Movimientos",
 
   // Transactions
-  "transactions.title": "Transacciones",
-  "transactions.subtitle": "Todas las transacciones de tus billeteras.",
+  "transactions.title": "Movimientos",
+  "transactions.subtitle": "Todos los movimientos de tus cuentas.",
   "transactions.add": "+ Agregar",
-  "transactions.empty": "Sin transacciones aun.",
+  "transactions.empty": "Sin movimientos todavia.",
   "transactions.today": "Hoy",
   "transactions.yesterday": "Ayer",
-  "transactions.allWallets": "Todas las billeteras",
+  "transactions.allWallets": "Todas las cuentas",
   "transactions.allTypes": "Todos los tipos",
   "transactions.allCategories": "Todas las categorias",
+  "transactions.income": "Ingreso",
+  "transactions.expense": "Gasto",
 
   // Sharing
   "sharing.title": "Compartir",
-  "sharing.subtitle": "Gestiona el acceso a tus billeteras y las que compartieron contigo.",
+  "sharing.subtitle": "Gestiona el acceso a tus cuentas y las que compartieron con vos.",
   "sharing.sharedWithMe": "Compartidas conmigo",
-  "sharing.noShared": "Nadie te compartio una billetera aun.",
+  "sharing.noShared": "Nadie te compartio una cuenta todavia.",
   "sharing.leave": "Salir",
   "sharing.manageAccess": "Gestionar acceso",
-  "sharing.noWallets": "No tenes billeteras aun.",
+  "sharing.noWallets": "No tenes cuentas todavia.",
   "sharing.members": "Miembros",
   "sharing.inviteSomeone": "Invitar a alguien",
-  "sharing.emailPlaceholder": "Direccion de email",
+  "sharing.emailPlaceholder": "Email",
   "sharing.invite": "Invitar",
   "sharing.pendingInvitations": "Invitaciones pendientes",
   "sharing.noPending": "Sin invitaciones pendientes",
 
   // Settings
-  "settings.title": "Configuracion",
+  "settings.title": "Ajustes",
   "settings.profile": "Perfil",
   "settings.name": "Nombre",
   "settings.email": "Email",
-  "settings.updateProfile": "Actualizar perfil",
+  "settings.updateProfile": "Guardar cambios",
+  "settings.updating": "Guardando...",
   "settings.changePassword": "Cambiar contraseña",
   "settings.currentPassword": "Contraseña actual",
   "settings.newPassword": "Nueva contraseña",
+  "settings.changingPassword": "Cambiando...",
   "settings.appearance": "Apariencia",
   "settings.theme": "Tema",
   "settings.light": "Claro",
@@ -253,9 +361,83 @@ const es: typeof en = {
 
   // Install
   "install.title": "Instalar Kash",
-  "install.subtitle": "Agrega a tu pantalla de inicio para acceso rapido",
+  "install.subtitle": "Agrega a tu pantalla de inicio",
   "install.button": "Instalar",
-  "install.iosHint": "Toca Compartir y luego \"Agregar a pantalla de inicio\" para instalar.",
+  "install.iosHint": "Toca Compartir y luego \"Agregar a pantalla de inicio\".",
+
+  // Toasts
+  "toast.welcome": "Bienvenido!",
+  "toast.welcomeNew": "Bienvenido",
+  "toast.transactionAdded": "Movimiento agregado",
+  "toast.transactionDeleted": "Movimiento eliminado",
+  "toast.walletCreated": "Cuenta creada",
+  "toast.profileUpdated": "Perfil actualizado",
+  "toast.passwordChanged": "Contraseña cambiada",
+  "toast.invitationSent": "Invitacion enviada",
+  "toast.invitationCancelled": "Invitacion cancelada",
+  "toast.invitationAccepted": "Invitacion aceptada",
+  "toast.invitationRejected": "Invitacion rechazada",
+  "toast.leftWallet": "Saliste de la cuenta",
+
+  // Wallet kinds
+  "walletKind.CASH": "Efectivo",
+  "walletKind.BANK": "Cuenta bancaria",
+  "walletKind.DEBIT": "Tarjeta debito",
+  "walletKind.CREDIT": "Tarjeta credito",
+
+  // Chart labels
+  "chart.income": "Ingresos",
+  "chart.expense": "Gastos",
+
+  // Wallet detail
+  "wallets.edit": "Editar",
+  "wallets.archive": "Archivar",
+  "wallets.currency": "Moneda",
+  "wallets.notFound": "Cuenta no encontrada.",
+
+  // Settings extras
+  "settings.subtitle": "Gestiona tu cuenta.",
+  "settings.account": "Cuenta",
+  "settings.memberSince": "Miembro desde",
+
+  // Invitations section (dashboard)
+  "invitations.pending": "Invitaciones pendientes",
+  "invitations.noPending": "Sin invitaciones pendientes",
+  "invitations.accept": "Aceptar",
+  "invitations.reject": "Rechazar",
+  "invitations.invitedBy": "invitado por",
+  "invitations.asRole": "como",
+
+  // Wallet form modal
+  "walletForm.createTitle": "Nueva Cuenta",
+  "walletForm.editTitle": "Editar Cuenta",
+  "walletForm.name": "Nombre",
+  "walletForm.namePlaceholder": "ej. Cuenta de ahorro",
+  "walletForm.type": "Tipo",
+  "walletForm.currency": "Moneda",
+  "walletForm.initialBalance": "Saldo inicial",
+  "walletForm.create": "Crear",
+  "walletForm.save": "Guardar cambios",
+
+  // Transaction form modal
+  "txnForm.title": "Nuevo Movimiento",
+  "txnForm.expense": "Gasto",
+  "txnForm.income": "Ingreso",
+  "txnForm.amount": "Monto",
+  "txnForm.date": "Fecha",
+  "txnForm.category": "Categoria",
+  "txnForm.noCategory": "Sin categoria",
+  "txnForm.description": "Descripcion",
+  "txnForm.descPlaceholder": "Nota opcional",
+  "txnForm.add": "Agregar",
+
+  // Roles
+  "role.OWNER": "Dueño",
+  "role.EDITOR": "Editor",
+  "role.VIEWER": "Lector",
+
+  // Wallets subtitle
+  "wallets.count": "cuentas",
 };
 
 export const locales = { en, es } as const;

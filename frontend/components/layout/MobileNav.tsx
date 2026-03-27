@@ -9,17 +9,20 @@ import {
   Users,
   Settings,
 } from "lucide-react";
+import { useI18n } from "@/components/i18n/I18nProvider";
+import type { TranslationKey } from "@/components/i18n/locales";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
-  { href: "/wallets", label: "Wallets", icon: Wallet },
-  { href: "/transactions", label: "Activity", icon: ArrowLeftRight },
-  { href: "/sharing", label: "Sharing", icon: Users },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard", labelKey: "nav.home" as TranslationKey, icon: LayoutDashboard },
+  { href: "/wallets", labelKey: "nav.wallets" as TranslationKey, icon: Wallet },
+  { href: "/transactions", labelKey: "nav.activity" as TranslationKey, icon: ArrowLeftRight },
+  { href: "/sharing", labelKey: "nav.sharing" as TranslationKey, icon: Users },
+  { href: "/settings", labelKey: "nav.settings" as TranslationKey, icon: Settings },
 ];
 
 export function MobileNav() {
   const pathname = usePathname();
+  const { t } = useI18n();
 
   return (
     <nav
@@ -40,7 +43,7 @@ export function MobileNav() {
             }}
           >
             <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-            <span className="text-[10px] font-medium">{item.label}</span>
+            <span className="text-[10px] font-medium">{t(item.labelKey)}</span>
           </Link>
         );
       })}

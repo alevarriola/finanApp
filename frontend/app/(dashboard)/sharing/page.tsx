@@ -6,7 +6,8 @@ import { graphqlRequest } from "@/components/lib/graphql/client";
 import { showSuccess, showError } from "@/components/lib/toast";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { WalletMembersSection } from "@/components/invitations/WalletMembersSection";
-import { Wallet, WALLET_KIND_LABELS } from "@/components/wallets/types";
+import { Wallet } from "@/components/wallets/types";
+import type { TranslationKey } from "@/components/i18n/locales";
 import { WALLETS_QUERY, LEAVE_WALLET_MUTATION } from "@/components/wallets/walletQueries";
 
 export default function SharingPage() {
@@ -24,7 +25,7 @@ export default function SharingPage() {
       graphqlRequest(LEAVE_WALLET_MUTATION, { walletId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wallets"] });
-      showSuccess("You left the wallet");
+      showSuccess(t("toast.leftWallet"));
     },
     onError: showError,
   });
@@ -85,7 +86,7 @@ export default function SharingPage() {
                         {wallet.name}
                       </p>
                       <p className="text-xs opacity-50" style={{ color: "var(--foreground)" }}>
-                        {WALLET_KIND_LABELS[wallet.walletKind]} · {wallet.myRole.toLowerCase()}
+                        {t(("walletKind." + wallet.walletKind) as TranslationKey)} · {wallet.myRole.toLowerCase()}
                       </p>
                     </div>
                     <p className="text-sm font-semibold flex-shrink-0" style={{ color: "var(--primary)" }}>
@@ -137,7 +138,7 @@ export default function SharingPage() {
                         {wallet.name}
                       </p>
                       <p className="text-xs opacity-50" style={{ color: "var(--foreground)" }}>
-                        {WALLET_KIND_LABELS[wallet.walletKind]}
+                        {t(("walletKind." + wallet.walletKind) as TranslationKey)}
                       </p>
                     </div>
                     <span

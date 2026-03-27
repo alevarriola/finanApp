@@ -15,6 +15,7 @@ import {
   CREATE_TRANSACTION_MUTATION,
   DELETE_TRANSACTION_MUTATION,
 } from "@/components/transactions/transactionQueries";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 const WALLET_QUERY = `
   query GetWallet($walletId: UUID!) {
@@ -28,6 +29,7 @@ export default function WalletDetailPage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { t } = useI18n();
   const walletId = params.id as string;
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -55,7 +57,7 @@ export default function WalletDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["transactions", walletId] });
       queryClient.invalidateQueries({ queryKey: ["wallet", walletId] });
       queryClient.invalidateQueries({ queryKey: ["wallets"] });
-      showSuccess("Transaction added");
+      showSuccess(t("toast.transactionAdded"));
       setModalOpen(false);
     },
     onError: showError,
@@ -68,7 +70,7 @@ export default function WalletDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["transactions", walletId] });
       queryClient.invalidateQueries({ queryKey: ["wallet", walletId] });
       queryClient.invalidateQueries({ queryKey: ["wallets"] });
-      showSuccess("Transaction deleted");
+      showSuccess(t("toast.transactionDeleted"));
     },
     onError: showError,
   });
@@ -102,9 +104,9 @@ export default function WalletDetailPage() {
   if (!wallet) {
     return (
       <div className="text-center py-12">
-        <p style={{ color: "var(--foreground)" }}>Wallet not found.</p>
+        <p style={{ color: "var(--foreground)" }}>{t("wallets.notFound")}</p>
         <button onClick={() => router.push("/wallets")} className="mt-4 text-sm underline" style={{ color: "var(--primary)" }}>
-          Back to wallets
+          {t("wallets.backToWallets")}
         </button>
       </div>
     );
@@ -124,7 +126,7 @@ export default function WalletDetailPage() {
           className="text-sm opacity-50 hover:opacity-80 transition-opacity"
           style={{ color: "var(--foreground)" }}
         >
-          ← Wallets
+          ← {t("wallets.backToWallets")}
         </button>
       </div>
 
@@ -143,7 +145,7 @@ export default function WalletDetailPage() {
           </div>
           <div className="text-right">
             <p className="text-xs opacity-50 mb-0.5" style={{ color: "var(--foreground)" }}>
-              Balance
+              {t("wallets.balance")}
             </p>
             <p className="text-2xl font-bold" style={{ color: "var(--primary)" }}>
               {formattedBalance}
@@ -154,7 +156,7 @@ export default function WalletDetailPage() {
 
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold" style={{ color: "var(--foreground)" }}>
-          Transactions
+          {t("wallets.transactions")}
         </h2>
         {canEdit && (
           <button
@@ -162,7 +164,7 @@ export default function WalletDetailPage() {
             className="px-4 py-2 rounded-lg text-sm font-semibold"
             style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
           >
-            + Add
+            {t("transactions.add")}
           </button>
         )}
       </div>

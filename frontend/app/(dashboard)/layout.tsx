@@ -1,24 +1,9 @@
-import Link from "next/link";
 import { cookies } from "next/headers";
-import {
-  LayoutDashboard,
-  Wallet,
-  ArrowLeftRight,
-  Users,
-  Settings,
-  LogOut,
-} from "lucide-react";
+import { LogOut } from "lucide-react";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { SidebarNav } from "@/components/layout/SidebarNav";
 import { InstallBanner } from "@/components/layout/InstallBanner";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
-
-const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/wallets", label: "Wallets", icon: Wallet },
-  { href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
-  { href: "/sharing", label: "Sharing", icon: Users },
-  { href: "/settings", label: "Settings", icon: Settings },
-];
 
 async function getUser() {
   const cookieStore = await cookies();
@@ -64,22 +49,7 @@ export default async function DashboardLayout({
         >
           Kash
         </div>
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium hover:opacity-80 transition-opacity"
-                style={{ color: "var(--foreground)" }}
-              >
-                <Icon size={18} strokeWidth={2} />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <SidebarNav />
         {user && (
           <div
             className="px-5 py-4 border-t text-xs"

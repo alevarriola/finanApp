@@ -13,9 +13,11 @@ import {
   UPDATE_WALLET_MUTATION,
   ARCHIVE_WALLET_MUTATION,
 } from "./walletQueries";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 export default function WalletsContent() {
   const queryClient = useQueryClient();
+  const { t } = useI18n();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null);
 
@@ -29,7 +31,7 @@ export default function WalletsContent() {
       graphqlRequest(CREATE_WALLET_MUTATION, { input, idempotencyKey: crypto.randomUUID() }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wallets"] });
-      showSuccess("Wallet created");
+      showSuccess(t("toast.walletCreated"));
       setModalOpen(false);
     },
     onError: showError,
@@ -40,7 +42,7 @@ export default function WalletsContent() {
       graphqlRequest(UPDATE_WALLET_MUTATION, { input }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wallets"] });
-      showSuccess("Wallet updated");
+      showSuccess(t("toast.profileUpdated"));
       setEditingWallet(null);
     },
     onError: showError,
@@ -51,7 +53,7 @@ export default function WalletsContent() {
       graphqlRequest(ARCHIVE_WALLET_MUTATION, { walletId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wallets"] });
-      showSuccess("Wallet archived");
+      showSuccess(t("wallets.archive"));
     },
     onError: showError,
   });
@@ -80,10 +82,10 @@ export default function WalletsContent() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
-            Wallets
+            {t("wallets.title")}
           </h1>
           <p className="text-sm opacity-50" style={{ color: "var(--foreground)" }}>
-            {wallets.length} {wallets.length === 1 ? "account" : "accounts"}
+            {wallets.length} {t("wallets.count")}
           </p>
         </div>
         <button
@@ -91,7 +93,7 @@ export default function WalletsContent() {
           className="px-4 py-2 rounded-lg text-sm font-semibold"
           style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
         >
-          + New Wallet
+          {t("wallets.create")}
         </button>
       </div>
 
@@ -112,18 +114,15 @@ export default function WalletsContent() {
           className="rounded-xl border-2 border-dashed p-12 text-center"
           style={{ borderColor: "var(--border)" }}
         >
-          <p className="text-lg font-medium mb-1" style={{ color: "var(--foreground)" }}>
-            No wallets yet
-          </p>
-          <p className="text-sm opacity-50 mb-4" style={{ color: "var(--foreground)" }}>
-            Create your first wallet to start tracking your finances
+          <p className="text-lg font-medium mb-4" style={{ color: "var(--foreground)" }}>
+            {t("wallets.empty")}
           </p>
           <button
             onClick={() => setModalOpen(true)}
             className="px-4 py-2 rounded-lg text-sm font-semibold"
             style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
           >
-            Create Wallet
+            {t("wallets.create")}
           </button>
         </div>
       ) : (

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { showError, showSuccess } from "@/components/lib/toast";
+import { useI18n } from "@/components/i18n/I18nProvider";
 import { PasswordInput } from "@/components/shared/PasswordInput";
 
 const schema = z.object({
@@ -17,6 +18,7 @@ type FormValues = z.infer<typeof schema>;
 
 export default function SignInPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const {
     register,
     handleSubmit,
@@ -36,7 +38,7 @@ export default function SignInPage() {
       return;
     }
 
-    showSuccess("Welcome back!");
+    showSuccess(t("toast.welcome"));
     router.push("/dashboard");
     router.refresh();
   }
@@ -56,7 +58,7 @@ export default function SignInPage() {
         Kash
       </h1>
       <p className="text-sm mb-6" style={{ color: "var(--foreground)" }}>
-        Sign in to your account
+        {t("auth.signIn.title")}
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -65,7 +67,7 @@ export default function SignInPage() {
             className="block text-sm font-medium mb-1"
             style={{ color: "var(--foreground)" }}
           >
-            Email
+            {t("auth.signIn.email")}
           </label>
           <input
             {...register("email")}
@@ -88,7 +90,7 @@ export default function SignInPage() {
             className="block text-sm font-medium mb-1"
             style={{ color: "var(--foreground)" }}
           >
-            Password
+            {t("auth.signIn.password")}
           </label>
           <PasswordInput
             {...register("password")}
@@ -111,18 +113,18 @@ export default function SignInPage() {
             color: "var(--primary-foreground)",
           }}
         >
-          {isSubmitting ? "Signing in..." : "Sign in"}
+          {isSubmitting ? t("auth.signIn.submitting") : t("auth.signIn.submit")}
         </button>
       </form>
 
       <p className="text-sm text-center mt-4" style={{ color: "var(--foreground)" }}>
-        No account?{" "}
+        {t("auth.signIn.noAccount")}{" "}
         <Link
           href="/sign-up"
           className="font-medium hover:underline"
           style={{ color: "var(--primary)" }}
         >
-          Create one
+          {t("auth.signIn.createOne")}
         </Link>
       </p>
     </div>

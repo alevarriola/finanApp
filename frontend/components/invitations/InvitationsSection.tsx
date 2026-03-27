@@ -9,8 +9,10 @@ import {
   ACCEPT_INVITATION_MUTATION,
   REJECT_INVITATION_MUTATION,
 } from "./invitationQueries";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 export function InvitationsSection() {
+  const { t } = useI18n();
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -28,7 +30,7 @@ export function InvitationsSection() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["receivedInvitations"] });
       queryClient.invalidateQueries({ queryKey: ["wallets"] });
-      showSuccess("Invitation accepted");
+      showSuccess(t("toast.invitationAccepted"));
     },
     onError: showError,
   });
@@ -38,7 +40,7 @@ export function InvitationsSection() {
       graphqlRequest(REJECT_INVITATION_MUTATION, { invitationId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["receivedInvitations"] });
-      showSuccess("Invitation rejected");
+      showSuccess(t("toast.invitationRejected"));
     },
     onError: showError,
   });
@@ -66,7 +68,7 @@ export function InvitationsSection() {
         style={{ borderColor: "var(--border)" }}
       >
         <p className="text-sm opacity-50" style={{ color: "var(--foreground)" }}>
-          No pending invitations
+          {t("invitations.noPending")}
         </p>
       </div>
     );
@@ -90,9 +92,9 @@ export function InvitationsSection() {
             </p>
             <p className="text-xs opacity-50" style={{ color: "var(--foreground)" }}>
               {inv.invitedByName
-                ? `Invited by ${inv.invitedByName}`
-                : "Invited"}{" "}
-              · as {inv.role.toLowerCase()}
+                ? `${t("invitations.invitedBy")} ${inv.invitedByName}`
+                : ""}{" "}
+              · {t("invitations.asRole")} {inv.role.toLowerCase()}
             </p>
           </div>
           <div className="flex gap-2">
@@ -102,7 +104,7 @@ export function InvitationsSection() {
               className="text-xs px-3 py-1.5 rounded-lg font-medium transition-opacity hover:opacity-80"
               style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
             >
-              Accept
+              {t("invitations.accept")}
             </button>
             <button
               onClick={() => rejectMutation.mutate(inv.id)}
@@ -110,7 +112,7 @@ export function InvitationsSection() {
               className="text-xs px-3 py-1.5 rounded-lg font-medium border transition-opacity hover:opacity-70"
               style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
             >
-              Reject
+              {t("invitations.reject")}
             </button>
           </div>
         </div>

@@ -4,7 +4,9 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Wallet, WalletKind, WALLET_KIND_LABELS } from "./types";
+import { useI18n } from "@/components/i18n/I18nProvider";
+import type { TranslationKey } from "@/components/i18n/locales";
+import { Wallet, WalletKind } from "./types";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required").max(100),
@@ -23,8 +25,10 @@ interface WalletFormModalProps {
 }
 
 const CURRENCIES = ["PYG", "USD", "EUR", "BRL", "ARS"];
+const WALLET_KINDS: WalletKind[] = ["CASH", "BANK", "DEBIT", "CREDIT"];
 
 export function WalletFormModal({ open, wallet, onClose, onSubmit }: WalletFormModalProps) {
+  const { t } = useI18n();
   const isEdit = Boolean(wallet);
   const {
     register,
@@ -64,31 +68,25 @@ export function WalletFormModal({ open, wallet, onClose, onSubmit }: WalletFormM
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/30"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
+      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
       <div
         className="relative w-full max-w-md rounded-2xl border shadow-xl p-6 z-10"
         style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
       >
         <h2 className="text-lg font-bold mb-4" style={{ color: "var(--foreground)" }}>
-          {isEdit ? "Edit Wallet" : "New Wallet"}
+          {isEdit ? t("walletForm.editTitle") : t("walletForm.createTitle")}
         </h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
-              Name
+              {t("walletForm.name")}
             </label>
             <input
               {...register("name")}
               className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
               style={inputStyle}
-              placeholder="e.g. Savings Account"
+              placeholder={t("walletForm.namePlaceholder")}
             />
             {errors.name && <p className="text-xs mt-1 text-red-600">{errors.name.message}</p>}
           </div>
@@ -96,15 +94,15 @@ export function WalletFormModal({ open, wallet, onClose, onSubmit }: WalletFormM
           {!isEdit && (
             <div>
               <label className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
-                Type
+                {t("walletForm.type")}
               </label>
               <select
                 {...register("walletKind")}
                 className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
                 style={inputStyle}
               >
-                {(Object.keys(WALLET_KIND_LABELS) as WalletKind[]).map((k) => (
-                  <option key={k} value={k}>{WALLET_KIND_LABELS[k]}</option>
+                {WALLET_KINDS.map((k) => (
+                  <option key={k} value={k}>{t(("walletKind." + k) as TranslationKey)}</option>
                 ))}
               </select>
             </div>
@@ -113,7 +111,7 @@ export function WalletFormModal({ open, wallet, onClose, onSubmit }: WalletFormM
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
-                Currency
+                {t("walletForm.currency")}
               </label>
               <select
                 {...register("currency")}
@@ -127,7 +125,7 @@ export function WalletFormModal({ open, wallet, onClose, onSubmit }: WalletFormM
             {!isEdit && (
               <div>
                 <label className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
-                  Initial Balance
+                  {t("walletForm.initialBalance")}
                 </label>
                 <input
                   {...register("initialBalance")}
@@ -148,7 +146,7 @@ export function WalletFormModal({ open, wallet, onClose, onSubmit }: WalletFormM
               className="flex-1 py-2 rounded-lg text-sm border"
               style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
             >
-              Cancel
+              {t("common.cancel")}
             </button>
             <button
               type="submit"
@@ -156,7 +154,7 @@ export function WalletFormModal({ open, wallet, onClose, onSubmit }: WalletFormM
               className="flex-1 py-2 rounded-lg text-sm font-semibold disabled:opacity-60"
               style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
             >
-              {isSubmitting ? "Saving..." : isEdit ? "Save Changes" : "Create"}
+              {isSubmitting ? t("common.loading") : isEdit ? t("walletForm.save") : t("walletForm.create")}
             </button>
           </div>
         </form>

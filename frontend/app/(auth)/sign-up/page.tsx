@@ -8,6 +8,7 @@ import Link from "next/link";
 import { graphqlRequest } from "@/components/lib/graphql/client";
 import { showError, showSuccess } from "@/components/lib/toast";
 import { PasswordInput } from "@/components/shared/PasswordInput";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 const REGISTER_MUTATION = `
   mutation Register($input: RegisterInput!) {
@@ -45,6 +46,7 @@ interface RegisterData {
 
 export default function SignUpPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const {
     register,
     handleSubmit,
@@ -65,7 +67,7 @@ export default function SignUpPage() {
         body: JSON.stringify({ email: values.email, password: values.password }),
       });
 
-      showSuccess(`Welcome, ${data.register.user.name}!`);
+      showSuccess(`${t("toast.welcomeNew")}, ${data.register.user.name}!`);
       router.push("/dashboard");
       router.refresh();
     } catch (err) {
@@ -88,7 +90,7 @@ export default function SignUpPage() {
         Kash
       </h1>
       <p className="text-sm mb-6" style={{ color: "var(--foreground)" }}>
-        Create your account
+        {t("auth.signUp.title")}
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -97,7 +99,7 @@ export default function SignUpPage() {
             className="block text-sm font-medium mb-1"
             style={{ color: "var(--foreground)" }}
           >
-            Name
+            {t("auth.signUp.name")}
           </label>
           <input
             {...register("name")}
@@ -120,7 +122,7 @@ export default function SignUpPage() {
             className="block text-sm font-medium mb-1"
             style={{ color: "var(--foreground)" }}
           >
-            Email
+            {t("auth.signUp.email")}
           </label>
           <input
             {...register("email")}
@@ -143,7 +145,7 @@ export default function SignUpPage() {
             className="block text-sm font-medium mb-1"
             style={{ color: "var(--foreground)" }}
           >
-            Password
+            {t("auth.signUp.password")}
           </label>
           <PasswordInput
             {...register("password")}
@@ -162,7 +164,7 @@ export default function SignUpPage() {
             className="block text-sm font-medium mb-1"
             style={{ color: "var(--foreground)" }}
           >
-            Confirm password
+            {t("auth.signUp.confirmPassword")}
           </label>
           <PasswordInput
             {...register("confirmPassword")}
@@ -185,18 +187,18 @@ export default function SignUpPage() {
             color: "var(--primary-foreground)",
           }}
         >
-          {isSubmitting ? "Creating account..." : "Create account"}
+          {isSubmitting ? t("auth.signUp.submitting") : t("auth.signUp.submit")}
         </button>
       </form>
 
       <p className="text-sm text-center mt-4" style={{ color: "var(--foreground)" }}>
-        Already have an account?{" "}
+        {t("auth.signUp.hasAccount")}{" "}
         <Link
           href="/sign-in"
           className="font-medium hover:underline"
           style={{ color: "var(--primary)" }}
         >
-          Sign in
+          {t("common.signIn")}
         </Link>
       </p>
     </div>

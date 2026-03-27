@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useI18n } from "@/components/i18n/I18nProvider";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import {
   Wallet,
   ArrowLeftRight,
@@ -8,40 +12,20 @@ import {
   Smartphone,
 } from "lucide-react";
 
-const FEATURES = [
-  {
-    icon: Wallet,
-    title: "Multiple wallets",
-    desc: "Cash, bank accounts, debit & credit cards - all in one place.",
-  },
-  {
-    icon: ArrowLeftRight,
-    title: "Income & expenses",
-    desc: "Log transactions in seconds. See your balance update instantly.",
-  },
-  {
-    icon: PieChart,
-    title: "Reports & charts",
-    desc: "Understand where your money goes with visual breakdowns.",
-  },
-  {
-    icon: Users,
-    title: "Shared wallets",
-    desc: "Invite family or friends to collaborate on shared accounts.",
-  },
-  {
-    icon: Shield,
-    title: "Secure by design",
-    desc: "JWT auth, email verification, and encrypted passwords.",
-  },
-  {
-    icon: Smartphone,
-    title: "Works on mobile",
-    desc: "Install as an app on your phone. No app store needed.",
-  },
+import type { TranslationKey } from "@/components/i18n/locales";
+
+const FEATURES: { icon: typeof Wallet; titleKey: TranslationKey; descKey: TranslationKey }[] = [
+  { icon: Wallet, titleKey: "landing.features.wallets.title", descKey: "landing.features.wallets.desc" },
+  { icon: ArrowLeftRight, titleKey: "landing.features.transactions.title", descKey: "landing.features.transactions.desc" },
+  { icon: PieChart, titleKey: "landing.features.reports.title", descKey: "landing.features.reports.desc" },
+  { icon: Users, titleKey: "landing.features.sharing.title", descKey: "landing.features.sharing.desc" },
+  { icon: Shield, titleKey: "landing.features.security.title", descKey: "landing.features.security.desc" },
+  { icon: Smartphone, titleKey: "landing.features.mobile.title", descKey: "landing.features.mobile.desc" },
 ];
 
 export default function HomePage() {
+  const { t } = useI18n();
+
   return (
     <div
       className="min-h-screen flex flex-col"
@@ -55,13 +39,16 @@ export default function HomePage() {
         >
           Kash
         </span>
-        <Link
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+          <Link
           href="/sign-in"
           className="text-sm font-medium px-4 py-1.5 rounded-lg border transition-opacity hover:opacity-70"
           style={{ borderColor: "var(--primary)", color: "var(--primary)" }}
         >
-          Sign in
-        </Link>
+          {t("common.signIn")}
+          </Link>
+        </div>
       </header>
 
       {/* Hero */}
@@ -74,22 +61,21 @@ export default function HomePage() {
               color: "var(--primary)",
             }}
           >
-            Personal finance, simplified
+            {t("landing.badge")}
           </div>
           <h1
             className="text-4xl md:text-5xl font-bold leading-tight tracking-tight"
             style={{ color: "var(--foreground)" }}
           >
-            Take control of
+            {t("landing.title1")}
             <br />
-            <span style={{ color: "var(--primary)" }}>your money</span>
+            <span style={{ color: "var(--primary)" }}>{t("landing.title2")}</span>
           </h1>
           <p
             className="text-sm md:text-base leading-relaxed max-w-md mx-auto"
             style={{ color: "var(--muted-foreground)" }}
           >
-            Track wallets, categorize expenses, share accounts with family, and
-            see exactly where your money goes.
+            {t("landing.subtitle")}
           </p>
         </div>
 
@@ -102,7 +88,7 @@ export default function HomePage() {
               color: "var(--primary-foreground)",
             }}
           >
-            Get started free
+            {t("landing.cta")}
           </Link>
           <Link
             href="/sign-in"
@@ -112,7 +98,7 @@ export default function HomePage() {
               color: "var(--foreground)",
             }}
           >
-            Sign in
+            {t("common.signIn")}
           </Link>
         </div>
       </section>
@@ -127,21 +113,20 @@ export default function HomePage() {
             className="text-2xl md:text-3xl font-bold text-center mb-3"
             style={{ color: "var(--foreground)" }}
           >
-            Everything you need
+            {t("landing.everythingTitle")}
           </h2>
           <p
             className="text-sm text-center mb-12 max-w-md mx-auto"
             style={{ color: "var(--muted-foreground)" }}
           >
-            Simple tools to manage your personal finances without the
-            complexity.
+            {t("landing.everythingSubtitle")}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {FEATURES.map((f) => {
               const Icon = f.icon;
               return (
                 <div
-                  key={f.title}
+                  key={f.titleKey}
                   className="rounded-xl border p-5 space-y-3"
                   style={{
                     borderColor: "var(--border)",
@@ -161,13 +146,13 @@ export default function HomePage() {
                     className="font-semibold text-sm"
                     style={{ color: "var(--foreground)" }}
                   >
-                    {f.title}
+                    {t(f.titleKey)}
                   </h3>
                   <p
                     className="text-xs leading-relaxed"
                     style={{ color: "var(--muted-foreground)" }}
                   >
-                    {f.desc}
+                    {t(f.descKey)}
                   </p>
                 </div>
               );
@@ -182,13 +167,13 @@ export default function HomePage() {
           className="text-2xl md:text-3xl font-bold mb-3"
           style={{ color: "var(--foreground)" }}
         >
-          Ready to start?
+          {t("landing.readyTitle")}
         </h2>
         <p
           className="text-sm mb-8 max-w-sm mx-auto"
           style={{ color: "var(--muted-foreground)" }}
         >
-          Free to use. No credit card required.
+          {t("landing.readySubtitle")}
         </p>
         <Link
           href="/sign-up"
@@ -198,7 +183,7 @@ export default function HomePage() {
             color: "var(--primary-foreground)",
           }}
         >
-          Create your account
+          {t("landing.readyCta")}
         </Link>
       </section>
 
@@ -211,7 +196,7 @@ export default function HomePage() {
           className="text-xs"
           style={{ color: "var(--muted-foreground)" }}
         >
-          Kash &mdash; Personal finance management
+          {t("landing.footer")}
         </p>
       </footer>
     </div>

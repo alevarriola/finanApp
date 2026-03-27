@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useI18n } from "@/components/i18n/I18nProvider";
 import { Category } from "./types";
 
 const schema = z.object({
@@ -29,6 +30,7 @@ export function TransactionFormModal({
   onClose,
   onSubmit,
 }: TransactionFormModalProps) {
+  const { t } = useI18n();
   const today = new Date().toISOString().split("T")[0];
   const {
     register,
@@ -68,7 +70,7 @@ export function TransactionFormModal({
         style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
       >
         <h2 className="text-lg font-bold mb-4" style={{ color: "var(--foreground)" }}>
-          New Transaction
+          {t("txnForm.title")}
         </h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -89,14 +91,14 @@ export function TransactionFormModal({
                   value={kind}
                   className="sr-only"
                 />
-                {kind === "EXPENSE" ? "🔴 Expense" : "🟢 Income"}
+                {kind === "EXPENSE" ? `🔴 ${t("txnForm.expense")}` : `🟢 ${t("txnForm.income")}`}
               </label>
             ))}
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
-              Amount
+              {t("txnForm.amount")}
             </label>
             <input
               {...register("amount")}
@@ -112,7 +114,7 @@ export function TransactionFormModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
-                Date
+                {t("txnForm.date")}
               </label>
               <input
                 {...register("date")}
@@ -125,14 +127,14 @@ export function TransactionFormModal({
 
             <div>
               <label className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
-                Category
+                {t("txnForm.category")}
               </label>
               <select
                 {...register("categoryId")}
                 className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
                 style={inputStyle}
               >
-                <option value="">No category</option>
+                <option value="">{t("txnForm.noCategory")}</option>
                 {filteredCategories.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -144,14 +146,14 @@ export function TransactionFormModal({
 
           <div>
             <label className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
-              Description
+              {t("txnForm.description")}
             </label>
             <input
               {...register("description")}
               type="text"
               className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
               style={inputStyle}
-              placeholder="Optional note"
+              placeholder={t("txnForm.descPlaceholder")}
             />
           </div>
 
@@ -162,7 +164,7 @@ export function TransactionFormModal({
               className="flex-1 py-2 rounded-lg text-sm border"
               style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
             >
-              Cancel
+              {t("common.cancel")}
             </button>
             <button
               type="submit"
@@ -170,7 +172,7 @@ export function TransactionFormModal({
               className="flex-1 py-2 rounded-lg text-sm font-semibold disabled:opacity-60"
               style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
             >
-              {isSubmitting ? "Saving..." : "Add"}
+              {isSubmitting ? t("common.loading") : t("txnForm.add")}
             </button>
           </div>
         </form>
