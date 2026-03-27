@@ -10,6 +10,7 @@ from app.graphql.reports.enums import ReportPeriod
 class CategorySpend:
     category_id: uuid.UUID | None
     category_name: str
+    category_name_es: str | None
     color: str
     total: Decimal
 

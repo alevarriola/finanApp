@@ -16,6 +16,7 @@ export interface Transaction {
 export interface Category {
   id: string;
   name: string;
+  nameEs: string | null;
   categoryKind: CategoryKind;
   color: string;
   isGlobal: boolean;

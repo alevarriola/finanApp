@@ -51,7 +51,7 @@ function formatDateLabel(dateStr: string, t: (key: string) => string): string {
 }
 
 export default function TransactionsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const queryClient = useQueryClient();
   const [walletId, setWalletId] = useState<string | null>(null);
   const [kind, setKind] = useState<TransactionKind | "">("");
@@ -159,7 +159,7 @@ export default function TransactionsPage() {
         >
           <option value="">{t("transactions.allCategories")}</option>
           {categories.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
+            <option key={c.id} value={c.id}>{locale === "es" && c.nameEs ? c.nameEs : c.name}</option>
           ))}
         </select>
 

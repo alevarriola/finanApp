@@ -8,6 +8,7 @@ export type ReportPeriod =
 export interface CategorySpend {
   categoryId: string | null;
   categoryName: string;
+  categoryNameEs: string | null;
   color: string;
   total: number;
 }

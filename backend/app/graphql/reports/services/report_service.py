@@ -112,8 +112,9 @@ class ReportService:
             CategorySpend(
                 category_id=row[0],
                 category_name=row[1] or "Uncategorized",
-                color=row[2] or "#94a3b8",
-                total=row[3],
+                category_name_es=row[2] or "Sin categoria",
+                color=row[3] or "#94a3b8",
+                total=row[4],
             )
             for row in cat_rows
         ]

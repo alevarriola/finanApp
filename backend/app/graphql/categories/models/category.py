@@ -15,6 +15,7 @@ class Category(BaseModel, HasCreatedAt, kw_only=True):
     name: Mapped[str] = mapped_column(String(100))
     category_kind: Mapped[CategoryKind] = mapped_column(IntEnumType(CategoryKind))
     color: Mapped[str] = mapped_column(String(7), default="#94a3b8")
+    name_es: Mapped[str | None] = mapped_column(String(100), nullable=True, default=None)
     user_id: Mapped[uuid.UUID | None] = mapped_column(
         PG_UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="CASCADE"),

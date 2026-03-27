@@ -76,7 +76,7 @@ function StatCard({
 }
 
 export default function DashboardPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [filters, setFilters] = useState<DashboardFilters>({
     period: "THIS_MONTH",
     walletId: null,
@@ -140,7 +140,7 @@ export default function DashboardPage() {
   });
 
   const pieData = (summary?.expensesByCategory ?? []).map((c) => ({
-    name: c.categoryName,
+    name: locale === "es" && c.categoryNameEs ? c.categoryNameEs : c.categoryName,
     value: Number(c.total),
     color: c.color,
   }));

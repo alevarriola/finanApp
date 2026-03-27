@@ -135,6 +135,7 @@ class ReportRepository:
             select(
                 Category.id,
                 Category.name,
+                Category.name_es,
                 Category.color,
                 func.sum(Transaction.amount).label("total"),
             )
@@ -154,7 +155,7 @@ class ReportRepository:
         if currency:
             stmt = stmt.where(Wallet.currency == currency)
 
-        stmt = stmt.group_by(Category.id, Category.name, Category.color).order_by(
+        stmt = stmt.group_by(Category.id, Category.name, Category.name_es, Category.color).order_by(
             func.sum(Transaction.amount).desc()
         )
         return list((await self.session.execute(stmt)).all())

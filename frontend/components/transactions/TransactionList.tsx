@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/components/i18n/I18nProvider";
+
 import { Transaction, Category } from "./types";
 
 interface TransactionListProps {
@@ -15,6 +17,7 @@ export function TransactionList({
   currency,
   onDelete,
 }: TransactionListProps) {
+  const { locale } = useI18n();
   const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]));
 
   if (transactions.length === 0) {
@@ -66,7 +69,7 @@ export function TransactionList({
                     </p>
                     {category && txn.description && (
                       <p className="text-xs opacity-50 truncate" style={{ color: "var(--foreground)" }}>
-                        {category.name}
+                        {locale === "es" && category.nameEs ? category.nameEs : category.name}
                       </p>
                     )}
                   </div>

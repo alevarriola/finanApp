@@ -10,6 +10,7 @@ export const DASHBOARD_SUMMARY_QUERY = `
       expensesByCategory {
         categoryId
         categoryName
+        categoryNameEs
         color
         total
       }

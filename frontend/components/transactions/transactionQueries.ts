@@ -18,6 +18,7 @@ export const CATEGORIES_QUERY = `
     categories {
       id
       name
+      nameEs
       categoryKind
       color
       isGlobal

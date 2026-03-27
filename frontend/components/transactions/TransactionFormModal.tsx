@@ -30,7 +30,7 @@ export function TransactionFormModal({
   onClose,
   onSubmit,
 }: TransactionFormModalProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const today = new Date().toISOString().split("T")[0];
   const {
     register,
@@ -137,7 +137,7 @@ export function TransactionFormModal({
                 <option value="">{t("txnForm.noCategory")}</option>
                 {filteredCategories.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name}
+                    {locale === "es" && c.nameEs ? c.nameEs : c.name}
                   </option>
                 ))}
               </select>
