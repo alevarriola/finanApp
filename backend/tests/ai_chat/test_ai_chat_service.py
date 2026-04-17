@@ -3,12 +3,14 @@ from decimal import Decimal
 import pytest
 
 from app.core.config import get_settings
+from app.graphql.ai_chat.agents.transaction_parser_agent import TransactionParserAgent
 from app.graphql.ai_chat.services.ai_chat_service import AiChatService
 from app.graphql.ai_chat.types.ai_chat_types import ParsedTransaction
 from app.graphql.categories.enums import CategoryKind
 from app.graphql.categories.repositories.category_repository import CategoryRepository
 from app.graphql.categories.services.category_service import CategoryService
 from app.graphql.schemas.schema import Mutation
+from app.graphql.transactions.enums import TransactionKind
 from app.graphql.wallets.enums import WalletKind
 from app.graphql.wallets.repositories.wallet_repository import WalletRepository
 from app.graphql.wallets.services.wallet_service import WalletService
@@ -19,6 +21,7 @@ def ai_chat_service(session, auth_info):
     return AiChatService(
         wallet_repository=WalletRepository(session),
         category_repository=CategoryRepository(session),
+        transaction_parser_agent=TransactionParserAgent(get_settings()),
         auth_info=auth_info,
         settings=get_settings(),
     )
@@ -39,7 +42,7 @@ async def test_parse_transaction_rejects_blank_text(ai_chat_service):
         await ai_chat_service.parse_transaction(" \n\t ")
 
 
-async def test_parse_transaction_returns_sanitized_stub(ai_chat_service, wallet_service) -> None:
+async def test_parse_transaction_uses_agent_output(ai_chat_service, wallet_service) -> None:
     await wallet_service.create_wallet(
         name="Cash Wallet",
         wallet_kind=WalletKind.CASH,
@@ -47,14 +50,35 @@ async def test_parse_transaction_returns_sanitized_stub(ai_chat_service, wallet_
         initial_balance=Decimal("0"),
     )
 
-    parsed = await ai_chat_service.parse_transaction("Gast\x00e   100 usd\n en cena")
+    captured: dict[str, str] = {}
+
+    async def fake_run(user_prompt: str, instructions: str) -> ParsedTransaction:
+        captured["user_prompt"] = user_prompt
+        captured["instructions"] = instructions
+        return ParsedTransaction(
+            raw_text="ignored by service",
+            wallet_hint="cash wallet",
+            amount=Decimal("100000"),
+            currency=None,
+            transaction_kind=TransactionKind.EXPENSE,
+            category_hint="food",
+            description="cena familiar",
+            confidence=0.91,
+        )
+
+    ai_chat_service.transaction_parser_agent.run = fake_run  # type: ignore[method-assign]
+
+    parsed = await ai_chat_service.parse_transaction("Gast\x00e   100k\n en cena")
 
     assert isinstance(parsed, ParsedTransaction)
-    assert parsed.raw_text == "Gaste 100 usd en cena"
-    assert parsed.description == "Gaste 100 usd en cena"
+    assert parsed.raw_text == "Gaste 100k en cena"
+    assert parsed.description == "cena familiar"
     assert parsed.currency == "USD"
     assert parsed.requires_confirmation is True
-    assert parsed.confidence == 0.0
+    assert parsed.confidence == 0.91
+    assert "Normalized user text:" in captured["user_prompt"]
+    assert "100000" in captured["user_prompt"]
+    assert "Cash Wallet" in captured["instructions"]
 
 
 async def test_context_only_includes_current_user_entities(
@@ -95,3 +119,37 @@ def test_schema_registers_parse_transaction_mutation() -> None:
     field_names = {field.python_name for field in Mutation.__strawberry_definition__.fields}
 
     assert "parse_transaction" in field_names
+
+
+@pytest.fixture
+def parser_agent() -> TransactionParserAgent:
+    return TransactionParserAgent(get_settings())
+
+
+def test_parser_agent_normalizes_colloquial_amounts(parser_agent: TransactionParserAgent) -> None:
+    normalized = parser_agent.normalize_colloquial_amounts("Gaste 100k y 1 palo en total")
+
+    assert normalized == "Gaste 100000 y 1000000 en total"
+
+
+async def test_parser_agent_falls_back_when_primary_fails(
+    parser_agent: TransactionParserAgent,
+) -> None:
+    async def fail_primary(user_prompt: str, instructions: str) -> ParsedTransaction:
+        raise RuntimeError("primary failed")
+
+    async def use_fallback(user_prompt: str, instructions: str) -> ParsedTransaction:
+        return ParsedTransaction(
+            raw_text=user_prompt,
+            amount=Decimal("25000"),
+            transaction_kind=TransactionKind.EXPENSE,
+            confidence=0.7,
+        )
+
+    parser_agent._run_primary = fail_primary  # type: ignore[method-assign]
+    parser_agent._run_fallback = use_fallback  # type: ignore[method-assign]
+
+    parsed = await parser_agent.run("prompt", "instructions")
+
+    assert parsed.amount == Decimal("25000")
+    assert parsed.transaction_kind == TransactionKind.EXPENSE

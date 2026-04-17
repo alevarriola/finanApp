@@ -1,5 +1,6 @@
 from app.auth.auth_info import AuthInfo
 from app.core.config import Settings
+from app.graphql.ai_chat.agents.transaction_parser_agent import TransactionParserAgent
 from app.graphql.ai_chat.types.ai_chat_types import (
     AiCategoryContext,
     AiWalletContext,
@@ -14,11 +15,13 @@ class AiChatService:
         self,
         wallet_repository: WalletRepository,
         category_repository: CategoryRepository,
+        transaction_parser_agent: TransactionParserAgent,
         auth_info: AuthInfo,
         settings: Settings,
     ) -> None:
         self.wallet_repository = wallet_repository
         self.category_repository = category_repository
+        self.transaction_parser_agent = transaction_parser_agent
         self.auth_info = auth_info
         self.settings = settings
 
@@ -63,14 +66,19 @@ class AiChatService:
             raise ValueError("Transaction text cannot be empty")
 
         wallet_context = await self.get_wallet_context()
+        category_context = await self.get_category_context()
         default_currency = self._pick_default_currency(wallet_context)
+        normalized_text = self.transaction_parser_agent.normalize_colloquial_amounts(sanitized_text)
+        instructions = self._build_instructions(wallet_context, category_context, default_currency)
+        user_prompt = self._build_user_prompt(sanitized_text, normalized_text)
+        parsed = await self.transaction_parser_agent.run(user_prompt, instructions)
 
-        return ParsedTransaction(
-            raw_text=sanitized_text,
-            currency=default_currency,
-            description=sanitized_text,
-            confidence=0.0,
-            requires_confirmation=True,
+        return parsed.model_copy(
+            update={
+                "raw_text": sanitized_text,
+                "currency": parsed.currency or default_currency,
+                "requires_confirmation": True,
+            }
         )
 
     def _sanitize_text(self, text: str) -> str:
@@ -82,3 +90,50 @@ class AiChatService:
         if len(currencies) == 1:
             return next(iter(currencies))
         return None
+
+    def _build_user_prompt(self, sanitized_text: str, normalized_text: str) -> str:
+        return "\n".join(
+            [
+                "Original user text:",
+                sanitized_text,
+                "",
+                "Normalized user text:",
+                normalized_text,
+            ]
+        )
+
+    def _build_instructions(
+        self,
+        wallet_context: list[AiWalletContext],
+        category_context: list[AiCategoryContext],
+        default_currency: str | None,
+    ) -> str:
+        wallet_lines = [
+            (
+                f"- {wallet.name} | kind={wallet.wallet_kind.name} | "
+                f"currency={wallet.currency} | role={wallet.role.name}"
+            )
+            for wallet in wallet_context
+        ]
+        category_lines = [
+            f"- {category.name} | es={category.name_es or '-'} | kind={category.category_kind.name}"
+            for category in category_context
+        ]
+        wallet_section = wallet_lines or ["- none"]
+        category_section = category_lines or ["- none"]
+
+        sections = [
+            "Context for the current user:",
+            "Wallets:",
+            *wallet_section,
+            "",
+            "Categories:",
+            *category_section,
+            "",
+            f"Default currency: {default_currency or 'unknown'}",
+            (
+                "If the user mentions relative dates like yesterday, infer the actual "
+                "calendar date from the current local context."
+            ),
+        ]
+        return "\n".join(sections)
