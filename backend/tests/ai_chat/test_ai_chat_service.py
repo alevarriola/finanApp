@@ -17,13 +17,18 @@ from app.graphql.wallets.services.wallet_service import WalletService
 
 
 @pytest.fixture
-def ai_chat_service(session, auth_info):
+def ai_chat_service(session, auth_info, tmp_path):
+    allowlist = tmp_path / "ai_chat_allowed_emails.txt"
+    allowlist.write_text(f"{auth_info.email}\n", encoding="utf-8")
+    settings = get_settings().model_copy(
+        update={"ai_chat_allowlist_path": str(allowlist)}
+    )
     return AiChatService(
         wallet_repository=WalletRepository(session),
         category_repository=CategoryRepository(session),
-        transaction_parser_agent=TransactionParserAgent(get_settings()),
+        transaction_parser_agent=TransactionParserAgent(settings),
         auth_info=auth_info,
-        settings=get_settings(),
+        settings=settings,
     )
 
 
@@ -35,6 +40,16 @@ def wallet_service(session, auth_info):
 @pytest.fixture
 def category_service(session, auth_info):
     return CategoryService(CategoryRepository(session), auth_info)
+
+
+def _service_with_settings(session, auth_info, settings):
+    return AiChatService(
+        wallet_repository=WalletRepository(session),
+        category_repository=CategoryRepository(session),
+        transaction_parser_agent=TransactionParserAgent(settings),
+        auth_info=auth_info,
+        settings=settings,
+    )
 
 
 async def test_parse_transaction_rejects_blank_text(ai_chat_service):
@@ -153,3 +168,43 @@ async def test_parser_agent_falls_back_when_primary_fails(
 
     assert parsed.amount == Decimal("25000")
     assert parsed.transaction_kind == TransactionKind.EXPENSE
+
+
+async def test_ai_chat_denies_user_not_in_allowlist(session, auth_info) -> None:
+    settings = get_settings().model_copy(
+        update={
+            "ai_chat_allowlist_path": "tests/fixtures/nonexistent_allowlist.txt",
+            "ai_chat_beta_message": "AI chat is in progress.",
+        }
+    )
+    service = _service_with_settings(session, auth_info, settings)
+
+    with pytest.raises(PermissionError, match="AI chat is in progress."):
+        service.ensure_access()
+
+
+async def test_ai_chat_allows_user_in_allowlist(session, auth_info, tmp_path) -> None:
+    allowlist = tmp_path / "ai_chat_allowed_emails.txt"
+    allowlist.write_text(f"# private beta\n{auth_info.email}\n", encoding="utf-8")
+    settings = get_settings().model_copy(
+        update={"ai_chat_allowlist_path": str(allowlist)}
+    )
+    service = _service_with_settings(session, auth_info, settings)
+
+    service.ensure_access()
+
+
+async def test_ai_chat_denies_when_feature_disabled(session, auth_info, tmp_path) -> None:
+    allowlist = tmp_path / "ai_chat_allowed_emails.txt"
+    allowlist.write_text(f"{auth_info.email}\n", encoding="utf-8")
+    settings = get_settings().model_copy(
+        update={
+            "ai_chat_enabled": False,
+            "ai_chat_allowlist_path": str(allowlist),
+            "ai_chat_beta_message": "Feature in progress.",
+        }
+    )
+    service = _service_with_settings(session, auth_info, settings)
+
+    with pytest.raises(PermissionError, match="Feature in progress."):
+        service.ensure_access()

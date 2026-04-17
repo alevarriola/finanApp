@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     openai_api_key: str
     ai_primary_model: str
     ai_fallback_model: str
+    ai_chat_enabled: bool
+    ai_chat_allowlist_path: str
+    ai_chat_beta_message: str
 
     # App
     environment: str
@@ -55,6 +58,8 @@ class Settings(BaseSettings):
             "openai_api_key",
             "ai_primary_model",
             "ai_fallback_model",
+            "ai_chat_allowlist_path",
+            "ai_chat_beta_message",
             "environment",
             "app_name",
         ]
@@ -71,6 +76,8 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+
 @functools.cache
 def get_settings() -> Settings:
     return Settings()

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from app.auth.auth_info import AuthInfo
 from app.core.config import Settings
 from app.graphql.ai_chat.agents.transaction_parser_agent import TransactionParserAgent
@@ -24,6 +26,12 @@ class AiChatService:
         self.transaction_parser_agent = transaction_parser_agent
         self.auth_info = auth_info
         self.settings = settings
+
+    def ensure_access(self) -> None:
+        if not self.settings.ai_chat_enabled:
+            raise PermissionError(self.settings.ai_chat_beta_message)
+        if self.auth_info.email.lower() not in self._load_allowed_emails():
+            raise PermissionError(self.settings.ai_chat_beta_message)
 
     async def get_wallet_context(self) -> list[AiWalletContext]:
         wallets = await self.wallet_repository.get_user_wallets(self.auth_info.user_id)
@@ -61,6 +69,7 @@ class AiChatService:
         ]
 
     async def parse_transaction(self, text: str) -> ParsedTransaction:
+        self.ensure_access()
         sanitized_text = self._sanitize_text(text)
         if not sanitized_text:
             raise ValueError("Transaction text cannot be empty")
@@ -90,6 +99,25 @@ class AiChatService:
         if len(currencies) == 1:
             return next(iter(currencies))
         return None
+
+    def _load_allowed_emails(self) -> set[str]:
+        path = self._resolve_allowlist_path()
+        if not path.exists():
+            return set()
+        emails: set[str] = set()
+        for line in path.read_text(encoding="utf-8").splitlines():
+            normalized = line.strip().lower()
+            if not normalized or normalized.startswith("#"):
+                continue
+            emails.add(normalized)
+        return emails
+
+    def _resolve_allowlist_path(self) -> Path:
+        configured_path = Path(self.settings.ai_chat_allowlist_path).expanduser()
+        if configured_path.is_absolute():
+            return configured_path
+        backend_root = Path(__file__).resolve().parents[4]
+        return backend_root / configured_path
 
     def _build_user_prompt(self, sanitized_text: str, normalized_text: str) -> str:
         return "\n".join(

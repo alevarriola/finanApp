@@ -18,6 +18,8 @@ class AiChatMutations:
     ) -> ParsedTransactionType:
         try:
             parsed = await service.parse_transaction(text)
+        except PermissionError as e:
+            raise GraphQLError(str(e), extensions={"statusCode": 403, "type": "FeatureLockedError"})
         except ValueError as e:
             raise GraphQLError(str(e), extensions={"statusCode": 400, "type": "ValidationError"})
 
