@@ -7,7 +7,7 @@ Personal finance app called **Kash** (domain: kash-py.com). Manage wallets, reco
 ```
 finanApp/
 ├── backend/       # FastAPI + Strawberry GraphQL + SQLAlchemy 2.0
-├── frontend/      # Next.js 15 + React Query + Tailwind CSS + Lucide Icons
+├── frontend/      # Next.js 16 + React Query + Tailwind CSS + Lucide Icons
 ├── ROADMAP.md     # Phase status and pending tasks
 └── docker-compose.yml  # Postgres + Redis
 ```
@@ -27,7 +27,7 @@ finanApp/
 ## Technology Stack
 - Backend: FastAPI, Strawberry GraphQL, SQLAlchemy 2.0 async, aioinject, Alembic, bcrypt, PyJWT, Resend
 - Database: PostgreSQL (single schema), Redis (idempotency + cache + email verification tokens)
-- Frontend: Next.js 15, React Query 5, react-hook-form, Zod, Radix UI, Tailwind CSS, Sonner, Recharts, Lucide React
+- Frontend: Next.js 16, React Query 5, react-hook-form, Zod, Radix UI, Tailwind CSS, Sonner, Recharts, Lucide React
 - Package managers: UV (backend), pnpm (frontend)
 - Dark mode: CSS variables with `[data-theme="dark"]`, persisted in localStorage
 - PWA: manifest.json + service worker, installable on mobile

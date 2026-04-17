@@ -1,7 +1,7 @@
 # Frontend - Guide for Claude Agents
 
 ## Purpose
-Kash UI. Next.js 15 with App Router. All backend requests go through the `/api/backend` proxy.
+Kash UI. Next.js 16 with App Router. All backend requests go through the `/api/backend` proxy.
 
 ## Structure
 ```

@@ -11,7 +11,7 @@ Personal finance app. Track wallets, record income and expenses, share accounts 
 | Layer | Tech |
 |---|---|
 | Backend | Python 3.13, FastAPI, Strawberry GraphQL, SQLAlchemy 2.0 async, aioinject, Alembic |
-| Frontend | Next.js 15, React Query 5, react-hook-form, Zod, Tailwind CSS, Recharts, Lucide React |
+| Frontend | Next.js 16, React Query 5, react-hook-form, Zod, Tailwind CSS, Recharts, Lucide React |
 | Database | PostgreSQL 16, Redis 7 |
 | Auth | JWT HS256, access token 24h, refresh token 7d, HttpOnly cookies |
 | Email | Resend (noreply@kash-py.com) |
@@ -86,7 +86,7 @@ finanApp/
 │   │       ├── invitations/ # Invite, accept, reject, cancel
 │   │       └── reports/     # Dashboard aggregations, multi-currency
 │   ├── alembic/             # Database migrations
-│   └── tests/               # pytest, 96 tests, 54% coverage
+│   └── tests/               # pytest, 110 tests, 55% coverage
 ├── frontend/
 │   ├── app/                 # Next.js pages (auth, dashboard, wallets, etc.)
 │   ├── components/          # React components, hooks, i18n, GraphQL client

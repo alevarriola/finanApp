@@ -22,7 +22,3 @@ export interface Category {
   isGlobal: boolean;
 }
 
-export const TRANSACTION_KIND_LABELS: Record<TransactionKind, string> = {
-  INCOME: "Income",
-  EXPENSE: "Expense",
-};
