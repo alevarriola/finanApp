@@ -22,6 +22,7 @@ backend/
 │   │   └── types.py        # IntEnumType - stores IntEnum as SMALLINT
 │   └── graphql/
 │       ├── schemas/schema.py   # Root schema - merge all queries/mutations here
+│       ├── ai_chat/            # AI parse/validate flow for natural-language transactions
 │       ├── users/              # Auth: register, login, me
 │       ├── wallets/            # Wallets CRUD with roles + walletMembers query
 │       ├── categories/         # Categories (global defaults + per-user), no icon field
@@ -37,9 +38,10 @@ backend/
 cd backend
 uv sync
 uv run uvicorn app.api.app:create_app --factory --reload --port 8000
-uv run alembic upgrade head
 uv run alembic revision --autogenerate -m "description"
 ```
+
+Do not run `alembic upgrade/downgrade` manually in this repo unless the user explicitly asks for it outside the normal guidance.
 
 ## GraphQL Request Flow
 ```
@@ -84,6 +86,45 @@ app/graphql/wallets/
 - `Singleton` → one instance per app (session factory, JWTService)
 - `Scoped` → one instance per request (repositories, services, session, auth_info)
 - Register new repos/services in `app/core/container.py`
+
+## AI Chat Module (`app/graphql/ai_chat`)
+
+Purpose:
+- parse one natural-language income/expense message
+- validate it against the current user's wallets/categories
+- return a safe preview for confirmation
+
+Current flow:
+1. `parseTransaction(text)` → LLM structured parse (`ParsedTransaction`)
+2. `validateTransaction(text)` → Python-side resolution (`ValidatedTransaction`)
+3. Frontend confirmation modal edits values
+4. Final save uses `transactions.create_transaction`, not `ai_chat`
+
+Important rules:
+- `AiChatService` must stay orchestration-only; do not bypass `TransactionService` for persistence
+- access control lives in `AiChatService.ensure_access()`
+- current restrictions include:
+  - `AI_CHAT_ENABLED`
+  - email allowlist path (`AI_CHAT_ALLOWLIST_PATH`)
+  - daily rate limit in Redis
+  - max input length guard
+- suspicious or non-transaction prompts should be rejected before calling the LLM when possible
+- provider failures should be converted to safe app-level errors (`AiProviderError`), not leaked raw to GraphQL clients
+
+Current settings used by `ai_chat`:
+- `OPENAI_API_KEY`
+- `AI_PRIMARY_MODEL`
+- `AI_FALLBACK_MODEL`
+- `AI_CHAT_ENABLED`
+- `AI_CHAT_ALLOWLIST_PATH`
+- `AI_CHAT_BETA_MESSAGE`
+- `AI_CHAT_MAX_REQUESTS_PER_DAY`
+- `AI_CHAT_MAX_INPUT_CHARS`
+
+Local beta allowlist:
+- tracked example: `backend/config/ai_chat_allowed_emails.example.txt`
+- real local file: `backend/config/ai_chat_allowed_emails.txt`
+- the real allowlist file is intentionally ignored by git
 
 ## Idempotency Keys (create mutations)
 - **Always** add `idempotency_key: uuid.UUID | None = None` to create mutations

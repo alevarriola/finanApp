@@ -1,6 +1,8 @@
 from decimal import Decimal
 
 from pydantic_ai import Agent
+from pydantic_ai.models.openai import OpenAIChatModel
+from pydantic_ai.providers.openai import OpenAIProvider
 
 from app.core.config import Settings
 from app.graphql.ai_chat.types.ai_chat_types import ParsedTransaction
@@ -26,15 +28,16 @@ Rules:
 class TransactionParserAgent:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
+        provider = OpenAIProvider(api_key=settings.openai_api_key)
         self._primary = Agent(
-            model=f"openai:{settings.ai_primary_model}",
+            model=OpenAIChatModel(settings.ai_primary_model, provider=provider),
             output_type=ParsedTransaction,
             system_prompt=_SYSTEM_PROMPT,
             retries=2,
             defer_model_check=True,
         )
         self._fallback = Agent(
-            model=f"openai:{settings.ai_fallback_model}",
+            model=OpenAIChatModel(settings.ai_fallback_model, provider=provider),
             output_type=ParsedTransaction,
             system_prompt=_SYSTEM_PROMPT,
             retries=1,
@@ -53,11 +56,11 @@ class TransactionParserAgent:
 
     async def _run_primary(self, user_prompt: str, instructions: str) -> ParsedTransaction:
         result = await self._primary.run(user_prompt, instructions=instructions)
-        return result.data
+        return result.output
 
     async def _run_fallback(self, user_prompt: str, instructions: str) -> ParsedTransaction:
         result = await self._fallback.run(user_prompt, instructions=instructions)
-        return result.data
+        return result.output
 
     def normalize_colloquial_amounts(self, text: str) -> str:
         words = text.split()

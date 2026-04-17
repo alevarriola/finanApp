@@ -29,7 +29,7 @@ frontend/
 │   ├── providers/           # QueryClientProvider + I18nProvider
 │   ├── dashboard/           # reportQueries, types
 │   ├── wallets/             # WalletCard, WalletFormModal, types, queries
-│   ├── transactions/        # TransactionList, TransactionFormModal, types, queries
+│   ├── transactions/        # Manual form + AI preview/confirm components, types, queries
 │   └── invitations/         # InvitationsSection, WalletMembersSection, types, queries
 ├── public/                  # PWA: manifest.json, sw.js, logo.svg, icons
 └── middleware.ts             # JWT route protection
@@ -103,3 +103,23 @@ const { t } = useI18n();
 6. Use `useI18n()` for user-visible text in Client Components
 7. Use Lucide icons, never emojis
 8. API route redirects: use `new URL("/path", request.url)`, never hardcode localhost
+
+## AI Transaction Flow (Current State)
+
+Current entry point:
+- wallet detail page only: `app/(dashboard)/wallets/[id]/page.tsx`
+
+Current components:
+- `components/transactions/AiTransactionPanel.tsx` - natural-language input + preview
+- `components/transactions/AiTransactionConfirmModal.tsx` - editable confirmation before save
+- `components/transactions/TransactionFormModal.tsx` - existing manual fallback flow
+
+Frontend contract:
+- preview uses `validateTransaction`
+- final save still uses the normal `createTransaction` mutation
+- wallet/category/date/amount edits happen only in the confirm modal
+- if AI preview fails, show clear inline feedback first; use generic toast only as fallback
+
+GraphQL client note:
+- `components/lib/graphql/client.ts` now preserves both `statusCode` and optional `errorType`
+- use `errorType` for AI-specific UX branches instead of string-matching raw messages

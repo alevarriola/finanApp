@@ -121,3 +121,24 @@ class Mutation(AuthMutations, WalletMutations, NewModuleMutations):
 | `categories` | 4 | Done - global defaults + per-user, no icon field |
 | `invitations` | 5 | Done - invite, accept, reject, cancel; received/sent queries |
 | `reports` | 6 | Done - dashboardSummary with period/wallet/category filters |
+| `ai_chat` | 8 | In progress but functional - natural-language transaction preview + confirmation flow |
+
+## `ai_chat` Notes
+
+Current GraphQL surface:
+- `parseTransaction(text: String!)` → `ParsedTransactionType`
+- `validateTransaction(text: String!)` → `ValidatedTransactionType`
+
+Expected mutation behavior:
+- convert internal typed failures to `GraphQLError` with `statusCode` and `type`
+- current `ai_chat` error types include:
+  - `FeatureLockedError`
+  - `RateLimitError`
+  - `SuspiciousPromptError`
+  - `AiInputError`
+  - `AiProviderError`
+
+Design rule:
+- `parseTransaction` and `validateTransaction` are preview-oriented
+- the actual DB write still belongs to `transactions.create_transaction`
+- do not duplicate transaction persistence logic inside `ai_chat`

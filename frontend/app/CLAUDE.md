@@ -17,7 +17,7 @@ app/
 │   ├── page.tsx                  # Redirect to /dashboard
 │   ├── dashboard/page.tsx        # Dashboard: stats, charts, filters (Recharts)
 │   ├── wallets/page.tsx          # Wallets list
-│   ├── wallets/[id]/page.tsx     # Wallet detail: transactions + add form
+│   ├── wallets/[id]/page.tsx     # Wallet detail: transactions + manual form + AI preview/confirm flow
 │   ├── transactions/page.tsx     # Global transactions with wallet/kind/category/date filters
 │   ├── sharing/page.tsx          # Manage shared wallets + invitations
 │   └── settings/page.tsx         # Profile, password, dark mode toggle
@@ -74,6 +74,21 @@ export const config = {
 - `POST /api/auth/resend-verification` - resends email verification, redirects to `/dashboard`
 
 **Important:** Never hardcode `localhost` in redirect URLs. Always use `new URL("/path", request.url)`.
+
+## Wallet Detail Route Notes
+
+`app/(dashboard)/wallets/[id]/page.tsx` is now the main AI transaction entry point.
+
+Current behavior:
+- keeps the existing manual `TransactionFormModal`
+- adds `AiTransactionPanel` for natural-language preview
+- opens `AiTransactionConfirmModal` for editable confirmation
+- invalidates `transactions`, `wallet`, `wallets`, and `dashboardSummary` after successful AI-driven save
+
+When editing this route:
+- keep the manual and AI flows independent
+- do not remove the manual fallback form
+- prefer small extracted components over growing the page file further
 
 ## Auth Cookies
 ```typescript

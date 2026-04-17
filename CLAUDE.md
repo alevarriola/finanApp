@@ -8,7 +8,6 @@ Personal finance app called **Kash** (domain: kash-py.com). Manage wallets, reco
 finanApp/
 ├── backend/       # FastAPI + Strawberry GraphQL + SQLAlchemy 2.0
 ├── frontend/      # Next.js 16 + React Query + Tailwind CSS + Lucide Icons
-├── ROADMAP.md     # Phase status and pending tasks
 └── docker-compose.yml  # Postgres + Redis
 ```
 
@@ -58,5 +57,14 @@ finanApp/
 - Language switcher is in: dashboard header, landing nav, auth layout
 - Note: category names come from the DB and are NOT translated via i18n
 
-## Project Phases
-See [ROADMAP.md](./ROADMAP.md) for current status and pending tasks.
+
+## AI Chat Feature 
+- Natural-language transaction capture is already implemented as a guided flow, not as an open chat bot.
+- Current entry point: wallet detail page (`frontend/app/(dashboard)/wallets/[id]/page.tsx`).
+- Current backend module: `backend/app/graphql/ai_chat/`.
+- Active pipeline: `validateTransaction(text)` → preview → editable confirmation modal → existing `createTransaction`.
+- `ai_chat` does not persist transactions directly; final persistence must go through the normal transactions module.
+- Access is intentionally restricted for now:
+  - global feature flag in backend settings
+  - local email allowlist file at `backend/config/ai_chat_allowed_emails.txt`
+  - daily rate limit in Redis

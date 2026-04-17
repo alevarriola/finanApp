@@ -20,6 +20,32 @@ Environment variables (in `backend/.env`):
 - `ENVIRONMENT` - "dev" | "staging" | "production"
 - `CORS_ORIGINS` - JSON list of allowed origins
 
+AI-related variables currently required by `Settings`:
+- `OPENAI_API_KEY`
+- `AI_PRIMARY_MODEL`
+- `AI_FALLBACK_MODEL`
+- `AI_CHAT_ENABLED`
+- `AI_CHAT_ALLOWLIST_PATH`
+- `AI_CHAT_BETA_MESSAGE`
+- `AI_CHAT_MAX_REQUESTS_PER_DAY`
+- `AI_CHAT_MAX_INPUT_CHARS`
+
+Settings in this repo are intentionally strict:
+- no silent fallback defaults for secrets or feature-critical values
+- missing required values should fail app startup early
+- local dev must keep `backend/.env` aligned with `backend/.env.example`
+
+## Redis Helpers
+
+Current Redis-backed helpers:
+- `app/core/idempotency.py` - create mutation deduplication
+- `app/core/rate_limit.py` - lightweight per-user counters (currently used by `ai_chat`)
+
+If you add new Redis-backed controls:
+- keep keys explicit and namespaced
+- close Redis clients after use
+- prefer small focused helpers over embedding Redis logic directly in services
+
 ## Shared ContextVars (`app/core/context.py`)
 
 ```python
