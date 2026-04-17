@@ -46,6 +46,7 @@ export function AiTransactionConfirmModal({
     register,
     handleSubmit,
     reset,
+    setValue,
     watch,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
@@ -61,6 +62,7 @@ export function AiTransactionConfirmModal({
   });
 
   const selectedKind = watch("transactionKind");
+  const selectedCategoryId = watch("categoryId");
   const filteredCategories = categories.filter((category) => category.categoryKind === selectedKind);
   const editableWallets = wallets.filter(
     (wallet) => wallet.myRole === "OWNER" || wallet.myRole === "EDITOR"
@@ -79,6 +81,24 @@ export function AiTransactionConfirmModal({
       description: preview?.description ?? "",
     });
   }, [fallbackWalletId, open, preview, reset, today]);
+
+  useEffect(() => {
+    if (!open || !preview?.categoryId) {
+      return;
+    }
+
+    const categoryExists = filteredCategories.some(
+      (category) => category.id === preview.categoryId
+    );
+
+    if (categoryExists && selectedCategoryId !== preview.categoryId) {
+      setValue("categoryId", preview.categoryId, {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
+    }
+  }, [filteredCategories, open, preview, selectedCategoryId, setValue]);
 
   if (!open || !preview) {
     return null;
@@ -217,6 +237,7 @@ export function AiTransactionConfirmModal({
             </label>
             <select
               {...register("categoryId")}
+              value={selectedCategoryId ?? ""}
               className="w-full rounded-lg border px-3 py-2 text-sm outline-none"
               style={inputStyle}
             >
