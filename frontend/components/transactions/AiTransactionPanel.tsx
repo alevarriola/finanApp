@@ -20,6 +20,7 @@ interface AiTransactionPanelProps {
   preview: ValidatedTransactionPreview | null;
   isLoading: boolean;
   onAnalyze: (text: string) => Promise<void>;
+  onOpenConfirm: () => void;
 }
 
 export function AiTransactionPanel({
@@ -27,6 +28,7 @@ export function AiTransactionPanel({
   preview,
   isLoading,
   onAnalyze,
+  onOpenConfirm,
 }: AiTransactionPanelProps) {
   const { t, locale } = useI18n();
   const {
@@ -206,6 +208,17 @@ export function AiTransactionPanel({
               {t("aiChat.ready")}
             </p>
           )}
+
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={onOpenConfirm}
+              className="rounded-lg px-4 py-2 text-sm font-semibold"
+              style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
+            >
+              {t("aiChat.reviewAndSave")}
+            </button>
+          </div>
         </div>
       )}
     </section>

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "@/components/lib/graphql/client";
 import { showSuccess, showError } from "@/components/lib/toast";
+import { AiTransactionConfirmModal } from "@/components/transactions/AiTransactionConfirmModal";
 import { AiTransactionPanel } from "@/components/transactions/AiTransactionPanel";
 import { TransactionFormModal } from "@/components/transactions/TransactionFormModal";
 import { TransactionList } from "@/components/transactions/TransactionList";
@@ -14,6 +15,7 @@ import {
   ValidatedTransactionPreview,
 } from "@/components/transactions/types";
 import { Wallet } from "@/components/wallets/types";
+import { WALLETS_QUERY } from "@/components/wallets/walletQueries";
 import {
   TRANSACTIONS_QUERY,
   CATEGORIES_QUERY,
@@ -38,6 +40,7 @@ export default function WalletDetailPage() {
   const { t } = useI18n();
   const walletId = params.id as string;
   const [modalOpen, setModalOpen] = useState(false);
+  const [aiConfirmOpen, setAiConfirmOpen] = useState(false);
   const [aiPreview, setAiPreview] = useState<ValidatedTransactionPreview | null>(null);
 
   const { data: walletData, isLoading: walletLoading } = useQuery({
@@ -57,6 +60,12 @@ export default function WalletDetailPage() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: walletsData } = useQuery({
+    queryKey: ["wallets"],
+    queryFn: () => graphqlRequest<{ wallets: Wallet[] }>(WALLETS_QUERY),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const createMutation = useMutation({
     mutationFn: (input: Record<string, unknown>) =>
       graphqlRequest(CREATE_TRANSACTION_MUTATION, { input, idempotencyKey: crypto.randomUUID() }),
@@ -64,8 +73,11 @@ export default function WalletDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["transactions", walletId] });
       queryClient.invalidateQueries({ queryKey: ["wallet", walletId] });
       queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardSummary"] });
       showSuccess(t("toast.transactionAdded"));
       setModalOpen(false);
+      setAiConfirmOpen(false);
+      setAiPreview(null);
     },
     onError: showError,
   });
@@ -95,6 +107,7 @@ export default function WalletDetailPage() {
   });
 
   const wallet = walletData?.wallet;
+  const wallets = walletsData?.wallets ?? [];
   const transactions = txnData?.transactions ?? [];
   const categories = catData?.categories ?? [];
 
@@ -114,6 +127,17 @@ export default function WalletDetailPage() {
   async function handleAiAnalyze(text: string) {
     const data = await validateMutation.mutateAsync(text);
     setAiPreview(data.validateTransaction);
+  }
+
+  async function handleAiConfirmSubmit(values: Record<string, unknown>) {
+    await createMutation.mutateAsync({
+      walletId: values.walletId,
+      amount: values.amount,
+      transactionKind: values.transactionKind,
+      date: values.date,
+      categoryId: values.categoryId || null,
+      description: values.description || null,
+    });
   }
 
   if (walletLoading) {
@@ -199,6 +223,7 @@ export default function WalletDetailPage() {
           preview={aiPreview}
           isLoading={validateMutation.isPending}
           onAnalyze={handleAiAnalyze}
+          onOpenConfirm={() => setAiConfirmOpen(true)}
         />
       )}
 
@@ -222,6 +247,16 @@ export default function WalletDetailPage() {
         categories={categories}
         onClose={() => setModalOpen(false)}
         onSubmit={handleFormSubmit}
+      />
+
+      <AiTransactionConfirmModal
+        open={aiConfirmOpen}
+        preview={aiPreview}
+        wallets={wallets}
+        categories={categories}
+        fallbackWalletId={wallet.id}
+        onClose={() => setAiConfirmOpen(false)}
+        onSubmit={handleAiConfirmSubmit}
       />
 
     </div>
