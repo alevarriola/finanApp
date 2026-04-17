@@ -1,5 +1,6 @@
 export type TransactionKind = "INCOME" | "EXPENSE";
 export type CategoryKind = "INCOME" | "EXPENSE";
+export type ValidationStatus = "PARSED" | "VALIDATED";
 
 export interface Transaction {
   id: string;
@@ -22,3 +23,19 @@ export interface Category {
   isGlobal: boolean;
 }
 
+export interface ValidatedTransactionPreview {
+  rawText: string;
+  walletId: string | null;
+  walletName: string | null;
+  categoryId: string | null;
+  categoryName: string | null;
+  amount: number | null;
+  currency: string | null;
+  transactionKind: TransactionKind | null;
+  description: string | null;
+  date: string | null;
+  confidence: number;
+  requiresConfirmation: boolean;
+  unresolvedFields: string[];
+  validationStatus: ValidationStatus;
+}

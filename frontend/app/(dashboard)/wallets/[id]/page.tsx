@@ -5,15 +5,21 @@ import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "@/components/lib/graphql/client";
 import { showSuccess, showError } from "@/components/lib/toast";
+import { AiTransactionPanel } from "@/components/transactions/AiTransactionPanel";
 import { TransactionFormModal } from "@/components/transactions/TransactionFormModal";
 import { TransactionList } from "@/components/transactions/TransactionList";
-import { Transaction, Category } from "@/components/transactions/types";
+import {
+  Transaction,
+  Category,
+  ValidatedTransactionPreview,
+} from "@/components/transactions/types";
 import { Wallet } from "@/components/wallets/types";
 import {
   TRANSACTIONS_QUERY,
   CATEGORIES_QUERY,
   CREATE_TRANSACTION_MUTATION,
   DELETE_TRANSACTION_MUTATION,
+  VALIDATE_TRANSACTION_MUTATION,
 } from "@/components/transactions/transactionQueries";
 import { useI18n } from "@/components/i18n/I18nProvider";
 
@@ -32,6 +38,7 @@ export default function WalletDetailPage() {
   const { t } = useI18n();
   const walletId = params.id as string;
   const [modalOpen, setModalOpen] = useState(false);
+  const [aiPreview, setAiPreview] = useState<ValidatedTransactionPreview | null>(null);
 
   const { data: walletData, isLoading: walletLoading } = useQuery({
     queryKey: ["wallet", walletId],
@@ -75,6 +82,18 @@ export default function WalletDetailPage() {
     onError: showError,
   });
 
+  const validateMutation = useMutation({
+    mutationFn: (text: string) =>
+      graphqlRequest<{ validateTransaction: ValidatedTransactionPreview }>(
+        VALIDATE_TRANSACTION_MUTATION,
+        { text }
+      ),
+    onError: (error) => {
+      setAiPreview(null);
+      showError(error);
+    },
+  });
+
   const wallet = walletData?.wallet;
   const transactions = txnData?.transactions ?? [];
   const categories = catData?.categories ?? [];
@@ -90,6 +109,11 @@ export default function WalletDetailPage() {
       categoryId: values.categoryId || null,
       description: values.description || null,
     });
+  }
+
+  async function handleAiAnalyze(text: string) {
+    const data = await validateMutation.mutateAsync(text);
+    setAiPreview(data.validateTransaction);
   }
 
   if (walletLoading) {
@@ -168,6 +192,15 @@ export default function WalletDetailPage() {
           </button>
         )}
       </div>
+
+      {canEdit && (
+        <AiTransactionPanel
+          walletCurrency={wallet.currency}
+          preview={aiPreview}
+          isLoading={validateMutation.isPending}
+          onAnalyze={handleAiAnalyze}
+        />
+      )}
 
       {txnLoading ? (
         <div className="space-y-2">
