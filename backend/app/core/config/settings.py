@@ -1,3 +1,5 @@
+import functools
+
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -9,7 +11,11 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def fix_database_url(self) -> "Settings":
         if self.database_url.startswith("postgresql://"):
-            self.database_url = self.database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            self.database_url = self.database_url.replace(
+                "postgresql://",
+                "postgresql+asyncpg://",
+                1,
+            )
         return self
 
     # Redis
@@ -26,6 +32,11 @@ class Settings(BaseSettings):
     resend_from_email: str = "onboarding@resend.dev"
     frontend_url: str = "http://localhost:3000"
 
+    # AI
+    openai_api_key: str = ""
+    ai_primary_model: str = "gpt-4.1-mini"
+    ai_fallback_model: str = "gpt-4o-mini"
+
     # App
     environment: str = "dev"
     app_name: str = "Kash"
@@ -36,11 +47,6 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
-
-
-import functools
-
-
 @functools.cache
 def get_settings() -> Settings:
     return Settings()
