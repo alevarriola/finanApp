@@ -96,9 +96,10 @@ Purpose:
 
 Current flow:
 1. `parseTransaction(text)` → LLM structured parse (`ParsedTransaction`)
-2. `validateTransaction(text)` → Python-side resolution (`ValidatedTransaction`)
+2. `validateTransaction(text)` → Python-side resolution (`ValidatedTransaction`) + `ai_transaction_events` draft record
 3. Frontend confirmation modal edits values
 4. Final save uses `transactions.create_transaction`, not `ai_chat`
+5. `completeAiTransactionEvent(...)` records whether the user confirmed, edited, or cancelled
 
 Important rules:
 - `AiChatService` must stay orchestration-only; do not bypass `TransactionService` for persistence
@@ -106,6 +107,7 @@ Important rules:
 - current restrictions include:
   - `AI_CHAT_ENABLED`
   - email allowlist path (`AI_CHAT_ALLOWLIST_PATH`)
+  - email blocklist path (`AI_CHAT_BLOCKLIST_PATH`)
   - daily rate limit in Redis
   - max input length guard
 - suspicious or non-transaction prompts should be rejected before calling the LLM when possible
@@ -117,14 +119,19 @@ Current settings used by `ai_chat`:
 - `AI_FALLBACK_MODEL`
 - `AI_CHAT_ENABLED`
 - `AI_CHAT_ALLOWLIST_PATH`
+- `AI_CHAT_BLOCKLIST_PATH`
 - `AI_CHAT_BETA_MESSAGE`
+- `AI_CHAT_BLOCKED_MESSAGE`
+- `AI_CHAT_ADMIN_ALERT_EMAILS`
 - `AI_CHAT_MAX_REQUESTS_PER_DAY`
 - `AI_CHAT_MAX_INPUT_CHARS`
 
-Local beta allowlist:
+Local beta access files:
 - tracked example: `backend/config/ai_chat_allowed_emails.example.txt`
+- tracked example: `backend/config/ai_chat_blocked_emails.example.txt`
 - real local file: `backend/config/ai_chat_allowed_emails.txt`
-- the real allowlist file is intentionally ignored by git
+- real local file: `backend/config/ai_chat_blocked_emails.txt`
+- the real allow/block files are intentionally ignored by git
 
 ## Idempotency Keys (create mutations)
 - **Always** add `idempotency_key: uuid.UUID | None = None` to create mutations

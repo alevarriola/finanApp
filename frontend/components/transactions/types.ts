@@ -24,6 +24,7 @@ export interface Category {
 }
 
 export interface ValidatedTransactionPreview {
+  eventId: string | null;
   rawText: string;
   walletId: string | null;
   walletName: string | null;
@@ -38,4 +39,15 @@ export interface ValidatedTransactionPreview {
   requiresConfirmation: boolean;
   unresolvedFields: string[];
   validationStatus: ValidationStatus;
+}
+
+export type AiSessionStatus = "PREVIEWED" | "SAVED" | "CANCELLED";
+
+export interface AiTransactionSessionEntry {
+  id: string;
+  rawText: string;
+  preview: ValidatedTransactionPreview;
+  status: AiSessionStatus;
+  createdAt: string;
+  transactionId?: string;
 }

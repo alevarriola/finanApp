@@ -28,6 +28,7 @@ Rules:
 class TransactionParserAgent:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
+        self.last_model_name: str | None = None
         provider = OpenAIProvider(api_key=settings.openai_api_key)
         self._primary = Agent(
             model=OpenAIChatModel(settings.ai_primary_model, provider=provider),
@@ -50,9 +51,13 @@ class TransactionParserAgent:
         instructions: str,
     ) -> ParsedTransaction:
         try:
-            return await self._run_primary(user_prompt, instructions)
+            parsed = await self._run_primary(user_prompt, instructions)
+            self.last_model_name = self.settings.ai_primary_model
+            return parsed
         except Exception:
-            return await self._run_fallback(user_prompt, instructions)
+            parsed = await self._run_fallback(user_prompt, instructions)
+            self.last_model_name = self.settings.ai_fallback_model
+            return parsed
 
     async def _run_primary(self, user_prompt: str, instructions: str) -> ParsedTransaction:
         result = await self._primary.run(user_prompt, instructions=instructions)

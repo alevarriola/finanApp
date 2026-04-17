@@ -5,7 +5,7 @@ from decimal import Decimal
 import strawberry
 from pydantic import BaseModel, Field, field_validator
 
-from app.graphql.ai_chat.enums import ValidationStatus
+from app.graphql.ai_chat.enums import AiTransactionEventStatus, ValidationStatus
 from app.graphql.categories.enums import CategoryKind
 from app.graphql.transactions.enums import TransactionKind
 from app.graphql.wallets.enums import WalletKind, WalletRole
@@ -48,6 +48,7 @@ class ParsedTransaction(BaseModel):
 
 
 class ValidatedTransaction(BaseModel):
+    event_id: uuid.UUID | None = None
     raw_text: str
     wallet_id: uuid.UUID | None = None
     wallet_name: str | None = None
@@ -104,6 +105,7 @@ class ParsedTransactionType:
 
 @strawberry.type
 class ValidatedTransactionType:
+    event_id: uuid.UUID | None
     raw_text: str
     wallet_id: uuid.UUID | None
     wallet_name: str | None
@@ -122,6 +124,7 @@ class ValidatedTransactionType:
     @classmethod
     def from_model(cls, model: ValidatedTransaction) -> "ValidatedTransactionType":
         return cls(
+            event_id=model.event_id,
             raw_text=model.raw_text,
             wallet_id=model.wallet_id,
             wallet_name=model.wallet_name,
@@ -137,3 +140,18 @@ class ValidatedTransactionType:
             unresolved_fields=model.unresolved_fields,
             validation_status=model.validation_status,
         )
+
+
+@strawberry.input
+class CompleteAiTransactionEventInput:
+    event_id: uuid.UUID
+    status: AiTransactionEventStatus
+    corrected_fields: list[str] = strawberry.field(default_factory=list)
+    transaction_id: uuid.UUID | None = None
+    wallet_id: uuid.UUID | None = None
+    category_id: uuid.UUID | None = None
+    amount: Decimal | None = None
+    currency: str | None = None
+    transaction_kind: TransactionKind | None = None
+    description: str | None = None
+    date: datetime.date | None = None

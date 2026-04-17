@@ -1,20 +1,32 @@
 import datetime
 import difflib
+import enum
 import logging
 import re
 import unicodedata
 from collections.abc import Callable
 from decimal import Decimal
 from pathlib import Path
+from typing import Any
 from uuid import UUID
+
+from pydantic import BaseModel
 
 from app.auth.auth_info import AuthInfo
 from app.core.config import Settings
+from app.core.email_service import send_ai_security_alert_email
+from app.core.exceptions import NotFoundError
 from app.core.rate_limit import consume_rate_limit
 from app.graphql.ai_chat.agents.transaction_parser_agent import TransactionParserAgent
+from app.graphql.ai_chat.enums import AiTransactionEventStatus
+from app.graphql.ai_chat.models.ai_transaction_event import AiTransactionEvent
+from app.graphql.ai_chat.repositories.ai_transaction_event_repository import (
+    AiTransactionEventRepository,
+)
 from app.graphql.ai_chat.types.ai_chat_types import (
     AiCategoryContext,
     AiWalletContext,
+    CompleteAiTransactionEventInput,
     ParsedTransaction,
     ValidatedTransaction,
 )
@@ -103,12 +115,14 @@ class AiChatService:
         self,
         wallet_repository: WalletRepository,
         category_repository: CategoryRepository,
+        event_repository: AiTransactionEventRepository,
         transaction_parser_agent: TransactionParserAgent,
         auth_info: AuthInfo,
         settings: Settings,
     ) -> None:
         self.wallet_repository = wallet_repository
         self.category_repository = category_repository
+        self.event_repository = event_repository
         self.transaction_parser_agent = transaction_parser_agent
         self.auth_info = auth_info
         self.settings = settings
@@ -116,6 +130,8 @@ class AiChatService:
     async def ensure_access(self) -> None:
         if not self.settings.ai_chat_enabled:
             raise PermissionError(self.settings.ai_chat_beta_message)
+        if self.auth_info.email.lower() in self._load_blocked_emails():
+            raise PermissionError(self.settings.ai_chat_blocked_message)
         if self.auth_info.email.lower() not in self._load_allowed_emails():
             raise PermissionError(self.settings.ai_chat_beta_message)
         await self._ensure_rate_limit()
@@ -193,7 +209,33 @@ class AiChatService:
         parsed = await self.parse_transaction(text)
         wallet_context = await self.get_wallet_context()
         category_context = await self.get_category_context()
-        return self._build_validated_transaction(parsed, wallet_context, category_context)
+        validated = self._build_validated_transaction(parsed, wallet_context, category_context)
+        event = await self._create_validation_event(parsed, validated)
+        return validated.model_copy(update={"event_id": event.id})
+
+    async def complete_transaction_event(
+        self,
+        input: CompleteAiTransactionEventInput,
+    ) -> AiTransactionEvent:
+        event = await self.event_repository.get_by_id(input.event_id)
+        if event is None or event.user_id != self.auth_info.user_id:
+            raise NotFoundError("AI transaction event not found")
+
+        event.status = input.status
+        event.corrected_fields = sorted(set(input.corrected_fields))
+        event.transaction_id = input.transaction_id
+        event.final_output = self._serialize_payload(
+            {
+                "wallet_id": input.wallet_id,
+                "category_id": input.category_id,
+                "amount": input.amount,
+                "currency": input.currency,
+                "transaction_kind": input.transaction_kind,
+                "description": input.description,
+                "date": input.date,
+            }
+        )
+        return await self.event_repository.save(event)
 
     def _sanitize_text(self, text: str) -> str:
         stripped = "".join(ch for ch in text if ch.isprintable() or ch.isspace())
@@ -233,6 +275,7 @@ class AiChatService:
                     "prompt": sanitized_text,
                 },
             )
+            self._notify_suspicious_prompt(sanitized_text)
             raise SuspiciousPromptError(
                 "I could not process that message. Please describe only one income or expense"
             )
@@ -298,6 +341,22 @@ class AiChatService:
             requires_confirmation=True,
             unresolved_fields=sorted(set(unresolved_fields)),
         )
+
+    async def _create_validation_event(
+        self,
+        parsed: ParsedTransaction,
+        validated: ValidatedTransaction,
+    ) -> AiTransactionEvent:
+        event = AiTransactionEvent(
+            user_id=self.auth_info.user_id,
+            raw_text=parsed.raw_text,
+            parsed_output=self._serialize_payload(parsed),
+            validated_output=self._serialize_payload(validated),
+            model_name=self.transaction_parser_agent.last_model_name,
+            status=AiTransactionEventStatus.VALIDATED,
+            corrected_fields=[],
+        )
+        return await self.event_repository.create(event)
 
     def _resolve_wallet(
         self,
@@ -454,7 +513,7 @@ class AiChatService:
         )
 
     def _load_allowed_emails(self) -> set[str]:
-        path = self._resolve_allowlist_path()
+        path = self._resolve_configured_email_path(self.settings.ai_chat_allowlist_path)
         if not path.exists():
             return set()
         emails: set[str] = set()
@@ -465,12 +524,56 @@ class AiChatService:
             emails.add(normalized)
         return emails
 
-    def _resolve_allowlist_path(self) -> Path:
-        configured_path = Path(self.settings.ai_chat_allowlist_path).expanduser()
+    def _load_blocked_emails(self) -> set[str]:
+        path = self._resolve_configured_email_path(self.settings.ai_chat_blocklist_path)
+        if not path.exists():
+            return set()
+        emails: set[str] = set()
+        for line in path.read_text(encoding="utf-8").splitlines():
+            normalized = line.strip().lower()
+            if not normalized or normalized.startswith("#"):
+                continue
+            emails.add(normalized)
+        return emails
+
+    def _resolve_configured_email_path(self, configured_value: str) -> Path:
+        configured_path = Path(configured_value).expanduser()
         if configured_path.is_absolute():
             return configured_path
         backend_root = Path(__file__).resolve().parents[4]
         return backend_root / configured_path
+
+    def _notify_suspicious_prompt(self, sanitized_text: str) -> None:
+        try:
+            send_ai_security_alert_email(
+                user_email=self.auth_info.email,
+                user_id=self.auth_info.user_id,
+                prompt=sanitized_text,
+            )
+        except Exception:
+            logger.exception(
+                "Failed to send suspicious AI prompt alert",
+                extra={"user_id": str(self.auth_info.user_id), "email": self.auth_info.email},
+            )
+
+    def _serialize_payload(self, value: Any) -> Any:
+        if value is None:
+            return None
+        if isinstance(value, BaseModel):
+            return self._serialize_payload(value.model_dump(mode="python"))
+        if isinstance(value, dict):
+            return {key: self._serialize_payload(item) for key, item in value.items()}
+        if isinstance(value, (list, tuple, set)):
+            return [self._serialize_payload(item) for item in value]
+        if isinstance(value, Decimal):
+            return str(value)
+        if isinstance(value, datetime.date | datetime.datetime):
+            return value.isoformat()
+        if isinstance(value, UUID):
+            return str(value)
+        if isinstance(value, enum.Enum):
+            return value.name
+        return value
 
     def _build_user_prompt(self, sanitized_text: str, normalized_text: str) -> str:
         return "\n".join(

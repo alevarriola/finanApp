@@ -149,6 +149,8 @@ export const showInfoToast = (msg: string) => toast.info(msg);
 - preview and confirmation components must stay bilingual via `aiChat.*` translation keys
 - if AI fails, prefer contextual inline feedback inside the AI panel first
 - final persistence must still go through the normal create mutation and React Query invalidation flow
+- if you touch AI flow wiring, prefer editing `AiTransactionWorkspace.tsx` instead of duplicating state across pages
+- `/chat` keeps a browser-session history only; do not turn it into DB-backed chat history by accident
 
 ## Project Color Classes (Tailwind)
 Use CSS variables for colors - already mapped in `tailwind.config.ts`:

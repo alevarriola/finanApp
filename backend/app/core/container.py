@@ -47,6 +47,9 @@ def create_container() -> aioinject.Container:
     container.register(aioinject.Scoped(_provide_auth_info, interface=AuthInfo))
 
     from app.graphql.ai_chat.agents.transaction_parser_agent import TransactionParserAgent
+    from app.graphql.ai_chat.repositories.ai_transaction_event_repository import (
+        AiTransactionEventRepository,
+    )
     from app.graphql.ai_chat.services.ai_chat_service import AiChatService
     from app.graphql.categories.repositories.category_repository import CategoryRepository
     from app.graphql.categories.services.category_service import CategoryService
@@ -66,6 +69,7 @@ def create_container() -> aioinject.Container:
     container.register(aioinject.Scoped(CategoryRepository))
     container.register(aioinject.Scoped(CategoryService))
     container.register(aioinject.Scoped(TransactionParserAgent))
+    container.register(aioinject.Scoped(AiTransactionEventRepository))
     container.register(aioinject.Scoped(AiChatService))
     container.register(aioinject.Scoped(TransactionRepository))
     container.register(aioinject.Scoped(TransactionService))

@@ -2,32 +2,21 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  GraphQLClientError,
-  graphqlRequest,
-} from "@/components/lib/graphql/client";
-import { showSuccess, showError } from "@/components/lib/toast";
-import type { TranslationKey } from "@/components/i18n/locales";
-import { AiTransactionConfirmModal } from "@/components/transactions/AiTransactionConfirmModal";
-import { AiTransactionPanel } from "@/components/transactions/AiTransactionPanel";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useI18n } from "@/components/i18n/I18nProvider";
+import { graphqlRequest } from "@/components/lib/graphql/client";
+import { showError, showSuccess } from "@/components/lib/toast";
+import { AiTransactionWorkspace } from "@/components/transactions/AiTransactionWorkspace";
 import { TransactionFormModal } from "@/components/transactions/TransactionFormModal";
 import { TransactionList } from "@/components/transactions/TransactionList";
 import {
-  Transaction,
-  Category,
-  ValidatedTransactionPreview,
-} from "@/components/transactions/types";
-import { Wallet } from "@/components/wallets/types";
-import { WALLETS_QUERY } from "@/components/wallets/walletQueries";
-import {
-  TRANSACTIONS_QUERY,
   CATEGORIES_QUERY,
   CREATE_TRANSACTION_MUTATION,
   DELETE_TRANSACTION_MUTATION,
-  VALIDATE_TRANSACTION_MUTATION,
+  TRANSACTIONS_QUERY,
 } from "@/components/transactions/transactionQueries";
-import { useI18n } from "@/components/i18n/I18nProvider";
+import type { Category, Transaction } from "@/components/transactions/types";
+import type { Wallet } from "@/components/wallets/types";
 
 const WALLET_QUERY = `
   query GetWallet($walletId: UUID!) {
@@ -44,9 +33,6 @@ export default function WalletDetailPage() {
   const { t } = useI18n();
   const walletId = params.id as string;
   const [modalOpen, setModalOpen] = useState(false);
-  const [aiConfirmOpen, setAiConfirmOpen] = useState(false);
-  const [aiPreview, setAiPreview] = useState<ValidatedTransactionPreview | null>(null);
-  const [aiFeedback, setAiFeedback] = useState<string | null>(null);
 
   const { data: walletData, isLoading: walletLoading } = useQuery({
     queryKey: ["wallet", walletId],
@@ -62,18 +48,15 @@ export default function WalletDetailPage() {
   const { data: catData } = useQuery({
     queryKey: ["categories"],
     queryFn: () => graphqlRequest<{ categories: Category[] }>(CATEGORIES_QUERY),
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: walletsData } = useQuery({
-    queryKey: ["wallets"],
-    queryFn: () => graphqlRequest<{ wallets: Wallet[] }>(WALLETS_QUERY),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 5 * 60_000,
   });
 
   const createMutation = useMutation({
     mutationFn: (input: Record<string, unknown>) =>
-      graphqlRequest(CREATE_TRANSACTION_MUTATION, { input, idempotencyKey: crypto.randomUUID() }),
+      graphqlRequest(CREATE_TRANSACTION_MUTATION, {
+        input,
+        idempotencyKey: crypto.randomUUID(),
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transactions", walletId] });
       queryClient.invalidateQueries({ queryKey: ["wallet", walletId] });
@@ -81,9 +64,6 @@ export default function WalletDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["dashboardSummary"] });
       showSuccess(t("toast.transactionAdded"));
       setModalOpen(false);
-      setAiConfirmOpen(false);
-      setAiPreview(null);
-      setAiFeedback(null);
     },
     onError: showError,
   });
@@ -100,28 +80,7 @@ export default function WalletDetailPage() {
     onError: showError,
   });
 
-  const validateMutation = useMutation({
-    mutationFn: (text: string) =>
-      graphqlRequest<{ validateTransaction: ValidatedTransactionPreview }>(
-        VALIDATE_TRANSACTION_MUTATION,
-        { text }
-      ),
-    onSuccess: () => {
-      setAiFeedback(null);
-    },
-    onError: (error) => {
-      setAiPreview(null);
-      setAiConfirmOpen(false);
-      if (error instanceof Error && "errorType" in error) {
-        setAiFeedback(getAiFeedbackMessage(error as GraphQLClientError, t));
-        return;
-      }
-      showError(error);
-    },
-  });
-
   const wallet = walletData?.wallet;
-  const wallets = walletsData?.wallets ?? [];
   const transactions = txnData?.transactions ?? [];
   const categories = catData?.categories ?? [];
 
@@ -138,28 +97,17 @@ export default function WalletDetailPage() {
     });
   }
 
-  async function handleAiAnalyze(text: string) {
-    setAiFeedback(null);
-    const data = await validateMutation.mutateAsync(text);
-    setAiPreview(data.validateTransaction);
-  }
-
-  async function handleAiConfirmSubmit(values: Record<string, unknown>) {
-    await createMutation.mutateAsync({
-      walletId: values.walletId,
-      amount: values.amount,
-      transactionKind: values.transactionKind,
-      date: values.date,
-      categoryId: values.categoryId || null,
-      description: values.description || null,
-    });
-  }
-
   if (walletLoading) {
     return (
       <div className="space-y-4">
-        <div className="h-8 w-48 rounded animate-pulse" style={{ backgroundColor: "var(--muted)" }} />
-        <div className="h-24 rounded-xl animate-pulse" style={{ backgroundColor: "var(--muted)" }} />
+        <div
+          className="h-8 w-48 rounded animate-pulse"
+          style={{ backgroundColor: "var(--muted)" }}
+        />
+        <div
+          className="h-24 rounded-xl animate-pulse"
+          style={{ backgroundColor: "var(--muted)" }}
+        />
       </div>
     );
   }
@@ -168,7 +116,11 @@ export default function WalletDetailPage() {
     return (
       <div className="text-center py-12">
         <p style={{ color: "var(--foreground)" }}>{t("wallets.notFound")}</p>
-        <button onClick={() => router.push("/wallets")} className="mt-4 text-sm underline" style={{ color: "var(--primary)" }}>
+        <button
+          onClick={() => router.push("/wallets")}
+          className="mt-4 text-sm underline"
+          style={{ color: "var(--primary)" }}
+        >
           {t("wallets.backToWallets")}
         </button>
       </div>
@@ -202,12 +154,18 @@ export default function WalletDetailPage() {
             <h1 className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
               {wallet.name}
             </h1>
-            <p className="text-sm opacity-50 mt-0.5" style={{ color: "var(--foreground)" }}>
+            <p
+              className="text-sm opacity-50 mt-0.5"
+              style={{ color: "var(--foreground)" }}
+            >
               {wallet.currency}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs opacity-50 mb-0.5" style={{ color: "var(--foreground)" }}>
+            <p
+              className="text-xs opacity-50 mb-0.5"
+              style={{ color: "var(--foreground)" }}
+            >
               {t("wallets.balance")}
             </p>
             <p className="text-2xl font-bold" style={{ color: "var(--primary)" }}>
@@ -225,7 +183,10 @@ export default function WalletDetailPage() {
           <button
             onClick={() => setModalOpen(true)}
             className="px-4 py-2 rounded-lg text-sm font-semibold"
-            style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
+            style={{
+              backgroundColor: "var(--primary)",
+              color: "var(--primary-foreground)",
+            }}
           >
             {t("transactions.add")}
           </button>
@@ -233,20 +194,20 @@ export default function WalletDetailPage() {
       </div>
 
       {canEdit && (
-        <AiTransactionPanel
-          walletCurrency={wallet.currency}
-          preview={aiPreview}
-          isLoading={validateMutation.isPending}
-          feedbackMessage={aiFeedback}
-          onAnalyze={handleAiAnalyze}
-          onOpenConfirm={() => setAiConfirmOpen(true)}
+        <AiTransactionWorkspace
+          defaultWalletId={wallet.id}
+          defaultWalletCurrency={wallet.currency}
         />
       )}
 
       {txnLoading ? (
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-14 rounded-xl animate-pulse" style={{ backgroundColor: "var(--muted)" }} />
+            <div
+              key={i}
+              className="h-14 rounded-xl animate-pulse"
+              style={{ backgroundColor: "var(--muted)" }}
+            />
           ))}
         </div>
       ) : (
@@ -264,37 +225,6 @@ export default function WalletDetailPage() {
         onClose={() => setModalOpen(false)}
         onSubmit={handleFormSubmit}
       />
-
-      <AiTransactionConfirmModal
-        open={aiConfirmOpen}
-        preview={aiPreview}
-        wallets={wallets}
-        categories={categories}
-        fallbackWalletId={wallet.id}
-        onClose={() => setAiConfirmOpen(false)}
-        onSubmit={handleAiConfirmSubmit}
-      />
-
     </div>
   );
-}
-
-function getAiFeedbackMessage(
-  error: GraphQLClientError,
-  t: (key: TranslationKey) => string,
-): string {
-  switch (error.errorType) {
-    case "RateLimitError":
-      return t("aiChat.feedback.rateLimit");
-    case "SuspiciousPromptError":
-      return t("aiChat.feedback.suspicious");
-    case "AiProviderError":
-      return t("aiChat.feedback.provider");
-    case "AiInputError":
-      return t("aiChat.feedback.input");
-    case "FeatureLockedError":
-      return t("aiChat.feedback.locked");
-    default:
-      return t("aiChat.feedback.generic");
-  }
 }

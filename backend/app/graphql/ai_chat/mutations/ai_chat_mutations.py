@@ -3,6 +3,7 @@ from aioinject import Injected
 from aioinject.ext.strawberry import inject
 from graphql import GraphQLError
 
+from app.core.exceptions import NotFoundError
 from app.graphql.ai_chat.services.ai_chat_service import (
     AiChatService,
     AiProviderError,
@@ -10,6 +11,7 @@ from app.graphql.ai_chat.services.ai_chat_service import (
     SuspiciousPromptError,
 )
 from app.graphql.ai_chat.types.ai_chat_types import (
+    CompleteAiTransactionEventInput,
     ParsedTransactionType,
     ValidatedTransactionType,
 )
@@ -66,3 +68,19 @@ class AiChatMutations:
             raise GraphQLError(str(e), extensions={"statusCode": 503, "type": "AiProviderError"})
 
         return ValidatedTransactionType.from_model(validated)
+
+    @strawberry.mutation
+    @inject
+    async def complete_ai_transaction_event(
+        self,
+        input: CompleteAiTransactionEventInput,
+        service: Injected[AiChatService],
+    ) -> bool:
+        try:
+            await service.complete_transaction_event(input)
+        except NotFoundError as e:
+            raise GraphQLError(str(e), extensions={"statusCode": 404})
+        except PermissionError as e:
+            raise GraphQLError(str(e), extensions={"statusCode": 403, "type": "FeatureLockedError"})
+
+        return True

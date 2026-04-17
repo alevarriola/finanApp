@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -276,6 +277,22 @@ export default function DashboardPage() {
           />
         </div>
       )}
+
+      <Link
+        href="/chat"
+        className="block rounded-2xl border p-5 transition-opacity hover:opacity-90"
+        style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
+      >
+        <p className="text-xs uppercase tracking-wide opacity-60" style={{ color: "var(--foreground)" }}>
+          {t("dashboard.aiCtaEyebrow")}
+        </p>
+        <h2 className="mt-1 text-lg font-semibold" style={{ color: "var(--foreground)" }}>
+          {t("dashboard.aiCtaTitle")}
+        </h2>
+        <p className="mt-1 text-sm opacity-70" style={{ color: "var(--foreground)" }}>
+          {t("dashboard.aiCtaSubtitle")}
+        </p>
+      </Link>
 
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

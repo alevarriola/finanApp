@@ -16,6 +16,7 @@ app/
 │   ├── layout.tsx                # DashboardShell: sidebar + topbar
 │   ├── page.tsx                  # Redirect to /dashboard
 │   ├── dashboard/page.tsx        # Dashboard: stats, charts, filters (Recharts)
+│   ├── chat/page.tsx             # Dedicated AI workspace + session history
 │   ├── wallets/page.tsx          # Wallets list
 │   ├── wallets/[id]/page.tsx     # Wallet detail: transactions + manual form + AI preview/confirm flow
 │   ├── transactions/page.tsx     # Global transactions with wallet/kind/category/date filters
@@ -77,12 +78,14 @@ export const config = {
 
 ## Wallet Detail Route Notes
 
-`app/(dashboard)/wallets/[id]/page.tsx` is now the main AI transaction entry point.
+AI routes:
+- `app/(dashboard)/wallets/[id]/page.tsx` keeps AI capture close to a concrete wallet
+- `app/(dashboard)/chat/page.tsx` is the global AI workspace with session history
 
 Current behavior:
 - keeps the existing manual `TransactionFormModal`
-- adds `AiTransactionPanel` for natural-language preview
-- opens `AiTransactionConfirmModal` for editable confirmation
+- uses `AiTransactionWorkspace` to drive preview, confirmation, and event completion
+- the dashboard page links users into `/chat`
 - invalidates `transactions`, `wallet`, `wallets`, and `dashboardSummary` after successful AI-driven save
 
 When editing this route:

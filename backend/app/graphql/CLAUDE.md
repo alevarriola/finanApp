@@ -128,6 +128,7 @@ class Mutation(AuthMutations, WalletMutations, NewModuleMutations):
 Current GraphQL surface:
 - `parseTransaction(text: String!)` → `ParsedTransactionType`
 - `validateTransaction(text: String!)` → `ValidatedTransactionType`
+- `completeAiTransactionEvent(input: CompleteAiTransactionEventInput!)` → `Boolean`
 
 Expected mutation behavior:
 - convert internal typed failures to `GraphQLError` with `statusCode` and `type`
@@ -142,3 +143,4 @@ Design rule:
 - `parseTransaction` and `validateTransaction` are preview-oriented
 - the actual DB write still belongs to `transactions.create_transaction`
 - do not duplicate transaction persistence logic inside `ai_chat`
+- use `ai_transaction_events` to persist raw text, parse/validate output, final edits, and linked `transaction_id`

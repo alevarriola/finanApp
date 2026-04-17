@@ -20,6 +20,7 @@ htmlcov/
 !.env.example
 !.env.local.example
 backend/config/ai_chat_allowed_emails.txt
+backend/config/ai_chat_blocked_emails.txt
 
 # ── Node / Next.js ────────────────────────────────────────────────────────────
 node_modules/

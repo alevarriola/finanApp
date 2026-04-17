@@ -106,17 +106,20 @@ const { t } = useI18n();
 
 ## AI Transaction Flow (Current State)
 
-Current entry point:
-- wallet detail page only: `app/(dashboard)/wallets/[id]/page.tsx`
+Current entry points:
+- wallet detail page: `app/(dashboard)/wallets/[id]/page.tsx`
+- dedicated AI workspace: `app/(dashboard)/chat/page.tsx`
 
 Current components:
 - `components/transactions/AiTransactionPanel.tsx` - natural-language input + preview
 - `components/transactions/AiTransactionConfirmModal.tsx` - editable confirmation before save
+- `components/transactions/AiTransactionWorkspace.tsx` - shared AI flow + session history wiring
 - `components/transactions/TransactionFormModal.tsx` - existing manual fallback flow
 
 Frontend contract:
 - preview uses `validateTransaction`
 - final save still uses the normal `createTransaction` mutation
+- AI event completion uses `completeAiTransactionEvent`
 - wallet/category/date/amount edits happen only in the confirm modal
 - if AI preview fails, show clear inline feedback first; use generic toast only as fallback
 

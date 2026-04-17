@@ -10,7 +10,7 @@ import type { TranslationKey } from "@/components/i18n/locales";
 import type { ValidatedTransactionPreview } from "./types";
 
 const schema = z.object({
-  text: z.string().trim().min(1).max(400),
+  text: z.string().trim().min(1).max(280),
 });
 
 type FormValues = z.infer<typeof schema>;
