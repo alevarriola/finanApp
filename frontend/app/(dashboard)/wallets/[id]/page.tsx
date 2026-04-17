@@ -3,8 +3,12 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { graphqlRequest } from "@/components/lib/graphql/client";
+import {
+  GraphQLClientError,
+  graphqlRequest,
+} from "@/components/lib/graphql/client";
 import { showSuccess, showError } from "@/components/lib/toast";
+import type { TranslationKey } from "@/components/i18n/locales";
 import { AiTransactionConfirmModal } from "@/components/transactions/AiTransactionConfirmModal";
 import { AiTransactionPanel } from "@/components/transactions/AiTransactionPanel";
 import { TransactionFormModal } from "@/components/transactions/TransactionFormModal";
@@ -42,6 +46,7 @@ export default function WalletDetailPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [aiConfirmOpen, setAiConfirmOpen] = useState(false);
   const [aiPreview, setAiPreview] = useState<ValidatedTransactionPreview | null>(null);
+  const [aiFeedback, setAiFeedback] = useState<string | null>(null);
 
   const { data: walletData, isLoading: walletLoading } = useQuery({
     queryKey: ["wallet", walletId],
@@ -78,6 +83,7 @@ export default function WalletDetailPage() {
       setModalOpen(false);
       setAiConfirmOpen(false);
       setAiPreview(null);
+      setAiFeedback(null);
     },
     onError: showError,
   });
@@ -100,8 +106,16 @@ export default function WalletDetailPage() {
         VALIDATE_TRANSACTION_MUTATION,
         { text }
       ),
+    onSuccess: () => {
+      setAiFeedback(null);
+    },
     onError: (error) => {
       setAiPreview(null);
+      setAiConfirmOpen(false);
+      if (error instanceof Error && "errorType" in error) {
+        setAiFeedback(getAiFeedbackMessage(error as GraphQLClientError, t));
+        return;
+      }
       showError(error);
     },
   });
@@ -125,6 +139,7 @@ export default function WalletDetailPage() {
   }
 
   async function handleAiAnalyze(text: string) {
+    setAiFeedback(null);
     const data = await validateMutation.mutateAsync(text);
     setAiPreview(data.validateTransaction);
   }
@@ -222,6 +237,7 @@ export default function WalletDetailPage() {
           walletCurrency={wallet.currency}
           preview={aiPreview}
           isLoading={validateMutation.isPending}
+          feedbackMessage={aiFeedback}
           onAnalyze={handleAiAnalyze}
           onOpenConfirm={() => setAiConfirmOpen(true)}
         />
@@ -261,4 +277,24 @@ export default function WalletDetailPage() {
 
     </div>
   );
+}
+
+function getAiFeedbackMessage(
+  error: GraphQLClientError,
+  t: (key: TranslationKey) => string,
+): string {
+  switch (error.errorType) {
+    case "RateLimitError":
+      return t("aiChat.feedback.rateLimit");
+    case "SuspiciousPromptError":
+      return t("aiChat.feedback.suspicious");
+    case "AiProviderError":
+      return t("aiChat.feedback.provider");
+    case "AiInputError":
+      return t("aiChat.feedback.input");
+    case "FeatureLockedError":
+      return t("aiChat.feedback.locked");
+    default:
+      return t("aiChat.feedback.generic");
+  }
 }

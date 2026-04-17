@@ -19,6 +19,7 @@ interface AiTransactionPanelProps {
   walletCurrency: string;
   preview: ValidatedTransactionPreview | null;
   isLoading: boolean;
+  feedbackMessage: string | null;
   onAnalyze: (text: string) => Promise<void>;
   onOpenConfirm: () => void;
 }
@@ -27,6 +28,7 @@ export function AiTransactionPanel({
   walletCurrency,
   preview,
   isLoading,
+  feedbackMessage,
   onAnalyze,
   onOpenConfirm,
 }: AiTransactionPanelProps) {
@@ -106,6 +108,19 @@ export function AiTransactionPanel({
             <p className="mt-1 text-xs text-red-600">{t("aiChat.validation")}</p>
           )}
         </div>
+
+        {feedbackMessage && (
+          <div
+            className="rounded-xl border px-3 py-2 text-sm"
+            style={{
+              borderColor: "color-mix(in srgb, #b45309 35%, var(--border))",
+              backgroundColor: "color-mix(in srgb, #f59e0b 10%, transparent)",
+              color: "var(--foreground)",
+            }}
+          >
+            {feedbackMessage}
+          </div>
+        )}
 
         <div className="flex items-center justify-between gap-3">
           <p className="text-xs opacity-70" style={{ color: "var(--foreground)" }}>

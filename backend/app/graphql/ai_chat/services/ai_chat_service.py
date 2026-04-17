@@ -1,12 +1,16 @@
 import datetime
 import difflib
+import logging
+import re
 import unicodedata
 from collections.abc import Callable
 from decimal import Decimal
 from pathlib import Path
+from uuid import UUID
 
 from app.auth.auth_info import AuthInfo
 from app.core.config import Settings
+from app.core.rate_limit import consume_rate_limit
 from app.graphql.ai_chat.agents.transaction_parser_agent import TransactionParserAgent
 from app.graphql.ai_chat.types.ai_chat_types import (
     AiCategoryContext,
@@ -19,6 +23,79 @@ from app.graphql.categories.repositories.category_repository import CategoryRepo
 from app.graphql.transactions.enums import TransactionKind
 from app.graphql.wallets.enums import WalletKind, WalletRole
 from app.graphql.wallets.repositories.wallet_repository import WalletRepository
+
+logger = logging.getLogger(__name__)
+
+_RATE_LIMIT_WINDOW_SECONDS = 24 * 60 * 60
+_SUSPICIOUS_PROMPT_PATTERNS = [
+    "ignore previous instructions",
+    "system prompt",
+    "developer message",
+    "reveal your prompt",
+    "show your prompt",
+    "act as",
+    "tool call",
+    "function call",
+]
+_TRANSACTION_VERBS = {
+    "gaste",
+    "gasté",
+    "pague",
+    "pagué",
+    "compre",
+    "compré",
+    "cobre",
+    "cobré",
+    "recibi",
+    "recibí",
+    "ingrese",
+    "ingresé",
+    "deposite",
+    "deposité",
+    "spent",
+    "paid",
+    "bought",
+    "received",
+    "earned",
+    "deposited",
+}
+_TRANSACTION_HINTS = {
+    "cash",
+    "efectivo",
+    "wallet",
+    "billetera",
+    "cuenta",
+    "bank",
+    "banco",
+    "card",
+    "tarjeta",
+    "credit",
+    "credito",
+    "crédito",
+    "debit",
+    "debito",
+    "débito",
+    "salary",
+    "salario",
+    "supermercado",
+    "restaurant",
+    "restaurante",
+    "uber",
+    "combustible",
+    "nafta",
+}
+
+
+class RateLimitError(Exception):
+    pass
+
+
+class SuspiciousPromptError(Exception):
+    pass
+
+
+class AiProviderError(Exception):
+    pass
 
 
 class AiChatService:
@@ -36,11 +113,12 @@ class AiChatService:
         self.auth_info = auth_info
         self.settings = settings
 
-    def ensure_access(self) -> None:
+    async def ensure_access(self) -> None:
         if not self.settings.ai_chat_enabled:
             raise PermissionError(self.settings.ai_chat_beta_message)
         if self.auth_info.email.lower() not in self._load_allowed_emails():
             raise PermissionError(self.settings.ai_chat_beta_message)
+        await self._ensure_rate_limit()
 
     async def get_wallet_context(self) -> list[AiWalletContext]:
         wallets = await self.wallet_repository.get_user_wallets(self.auth_info.user_id)
@@ -78,10 +156,15 @@ class AiChatService:
         ]
 
     async def parse_transaction(self, text: str) -> ParsedTransaction:
-        self.ensure_access()
+        await self.ensure_access()
         sanitized_text = self._sanitize_text(text)
         if not sanitized_text:
             raise ValueError("Transaction text cannot be empty")
+        if len(sanitized_text) > self.settings.ai_chat_max_input_chars:
+            raise ValueError("Transaction text is too long")
+        self._guard_prompt(sanitized_text)
+        if not self._looks_like_transaction_request(sanitized_text):
+            raise ValueError("Please describe one income or expense in a single sentence")
 
         wallet_context = await self.get_wallet_context()
         category_context = await self.get_category_context()
@@ -89,7 +172,14 @@ class AiChatService:
         normalized_text = self.transaction_parser_agent.normalize_colloquial_amounts(sanitized_text)
         instructions = self._build_instructions(wallet_context, category_context, default_currency)
         user_prompt = self._build_user_prompt(sanitized_text, normalized_text)
-        parsed = await self.transaction_parser_agent.run(user_prompt, instructions)
+        try:
+            parsed = await self.transaction_parser_agent.run(user_prompt, instructions)
+        except Exception as exc:
+            logger.exception(
+                "AI provider failure while parsing transaction",
+                extra={"user_id": str(self.auth_info.user_id), "email": self.auth_info.email},
+            )
+            raise AiProviderError("AI parsing is temporarily unavailable") from exc
 
         return parsed.model_copy(
             update={
@@ -114,6 +204,52 @@ class AiChatService:
         if len(currencies) == 1:
             return next(iter(currencies))
         return None
+
+    async def _ensure_rate_limit(self) -> None:
+        allowed = await self._consume_rate_limit()
+        if not allowed:
+            raise RateLimitError("AI chat daily limit reached. Please try again tomorrow")
+
+    async def _consume_rate_limit(self) -> bool:
+        key = self._rate_limit_key(self.auth_info.user_id)
+        return await consume_rate_limit(
+            redis_url=self.settings.redis_url,
+            key=key,
+            limit=self.settings.ai_chat_max_requests_per_day,
+            window_seconds=_RATE_LIMIT_WINDOW_SECONDS,
+        )
+
+    def _rate_limit_key(self, user_id: UUID) -> str:
+        return f"rate-limit:ai-chat:{user_id}"
+
+    def _guard_prompt(self, sanitized_text: str) -> None:
+        normalized_text = self._normalize_match_text(sanitized_text)
+        if any(pattern in normalized_text for pattern in _SUSPICIOUS_PROMPT_PATTERNS):
+            logger.warning(
+                "Blocked suspicious AI chat prompt",
+                extra={
+                    "user_id": str(self.auth_info.user_id),
+                    "email": self.auth_info.email,
+                    "prompt": sanitized_text,
+                },
+            )
+            raise SuspiciousPromptError(
+                "I could not process that message. Please describe only one income or expense"
+            )
+
+    def _looks_like_transaction_request(self, sanitized_text: str) -> bool:
+        normalized_text = self._normalize_match_text(sanitized_text)
+        words = set(normalized_text.split())
+        signal_count = 0
+
+        if re.search(r"\d", sanitized_text):
+            signal_count += 1
+        if words.intersection(_TRANSACTION_VERBS):
+            signal_count += 1
+        if words.intersection(_TRANSACTION_HINTS):
+            signal_count += 1
+
+        return signal_count >= 2
 
     def _build_validated_transaction(
         self,

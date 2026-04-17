@@ -3,6 +3,11 @@ export interface GraphQLResponse<T> {
   errors?: { message: string; extensions?: Record<string, unknown> }[];
 }
 
+export interface GraphQLClientError extends Error {
+  statusCode: number;
+  errorType?: string;
+}
+
 export async function graphqlRequest<T>(
   query: string,
   variables?: Record<string, unknown>
@@ -18,8 +23,11 @@ export async function graphqlRequest<T>(
   if (json.errors && json.errors.length > 0) {
     const err = json.errors[0];
     const statusCode = (err.extensions?.statusCode as number) ?? 500;
-    const error = new Error(err.message) as Error & { statusCode: number };
+    const errorType =
+      typeof err.extensions?.type === "string" ? err.extensions.type : undefined;
+    const error = new Error(err.message) as GraphQLClientError;
     error.statusCode = statusCode;
+    error.errorType = errorType;
     throw error;
   }
 
