@@ -7,6 +7,7 @@ import {
   ArrowLeftRight,
   Users,
   Settings,
+  Sparkles,
 } from "lucide-react";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import type { TranslationKey } from "@/components/i18n/locales";
@@ -15,6 +16,7 @@ const NAV_ITEMS = [
   { href: "/dashboard", labelKey: "nav.dashboard" as TranslationKey, icon: LayoutDashboard },
   { href: "/wallets", labelKey: "nav.wallets" as TranslationKey, icon: Wallet },
   { href: "/transactions", labelKey: "nav.transactions" as TranslationKey, icon: ArrowLeftRight },
+  { href: "/chat", labelKey: "nav.ai" as TranslationKey, icon: Sparkles },
   { href: "/sharing", labelKey: "nav.sharing" as TranslationKey, icon: Users },
   { href: "/settings", labelKey: "nav.settings" as TranslationKey, icon: Settings },
 ];

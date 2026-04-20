@@ -13,10 +13,4 @@ export interface Wallet {
   createdAt: string;
 }
 
-export const WALLET_KIND_LABELS: Record<WalletKind, string> = {
-  CASH: "Cash",
-  BANK: "Bank Account",
-  DEBIT: "Debit Card",
-  CREDIT: "Credit Card",
-};
 

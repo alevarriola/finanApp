@@ -103,3 +103,30 @@ async def test_list_categories_ordered_by_kind_then_name(category_service):
     assert income[0].name == "Mango"
     assert expense[0].name == "Apple"
     assert expense[1].name == "Zebra"
+
+async def test_create_category_name_es_defaults_to_none(category_service):
+    cat = await category_service.create_category(
+        name="Custom",
+        category_kind=CategoryKind.EXPENSE,
+    )
+    assert cat.name_es is None
+
+
+async def test_global_category_has_name_es(session, auth_info):
+    from app.graphql.categories.models.category import Category
+
+    cat = Category(
+        name="Groceries",
+        category_kind=CategoryKind.EXPENSE,
+        user_id=None,
+        name_es="Supermercado",
+    )
+    session.add(cat)
+    await session.flush()
+
+    service = CategoryService(CategoryRepository(session), auth_info)
+    categories = await service.list_categories()
+    groceries = next((c for c in categories if c.name == "Groceries"), None)
+
+    assert groceries is not None
+    assert groceries.name_es == "Supermercado"

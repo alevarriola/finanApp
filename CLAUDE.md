@@ -7,8 +7,7 @@ Personal finance app called **Kash** (domain: kash-py.com). Manage wallets, reco
 ```
 finanApp/
 ├── backend/       # FastAPI + Strawberry GraphQL + SQLAlchemy 2.0
-├── frontend/      # Next.js 15 + React Query + Tailwind CSS + Lucide Icons
-├── ROADMAP.md     # Phase status and pending tasks
+├── frontend/      # Next.js 16 + React Query + Tailwind CSS + Lucide Icons
 └── docker-compose.yml  # Postgres + Redis
 ```
 
@@ -27,7 +26,7 @@ finanApp/
 ## Technology Stack
 - Backend: FastAPI, Strawberry GraphQL, SQLAlchemy 2.0 async, aioinject, Alembic, bcrypt, PyJWT, Resend
 - Database: PostgreSQL (single schema), Redis (idempotency + cache + email verification tokens)
-- Frontend: Next.js 15, React Query 5, react-hook-form, Zod, Radix UI, Tailwind CSS, Sonner, Recharts, Lucide React
+- Frontend: Next.js 16, React Query 5, react-hook-form, Zod, Radix UI, Tailwind CSS, Sonner, Recharts, Lucide React
 - Package managers: UV (backend), pnpm (frontend)
 - Dark mode: CSS variables with `[data-theme="dark"]`, persisted in localStorage
 - PWA: manifest.json + service worker, installable on mobile
@@ -58,5 +57,19 @@ finanApp/
 - Language switcher is in: dashboard header, landing nav, auth layout
 - Note: category names come from the DB and are NOT translated via i18n
 
-## Project Phases
-See [ROADMAP.md](./ROADMAP.md) for current status and pending tasks.
+
+## AI Chat Feature 
+- Natural-language transaction capture is already implemented as a guided flow, not as an open chat bot.
+- Current entry points:
+  - wallet detail page (`frontend/app/(dashboard)/wallets/[id]/page.tsx`)
+  - dedicated AI workspace (`frontend/app/(dashboard)/chat/page.tsx`)
+- Current backend module: `backend/app/graphql/ai_chat/`.
+- Active pipeline: `validateTransaction(text)` → preview → editable confirmation modal → existing `createTransaction`.
+- `ai_chat` does not persist transactions directly; final persistence must go through the normal transactions module.
+- Successful previews now create `ai_transaction_events` records so the app can learn from accepts, edits, and cancels.
+- Access is intentionally restricted for now:
+  - global feature flag in backend settings
+  - local email allowlist file at `backend/config/ai_chat_allowed_emails.txt`
+  - local manual blocklist file at `backend/config/ai_chat_blocked_emails.txt`
+  - daily rate limit in Redis
+  - suspicious prompt alert emails to admins

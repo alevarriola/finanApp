@@ -59,3 +59,31 @@ export const DELETE_TRANSACTION_MUTATION = `
     deleteTransaction(transactionId: $transactionId)
   }
 `;
+
+export const VALIDATE_TRANSACTION_MUTATION = `
+  mutation ValidateTransaction($text: String!) {
+    validateTransaction(text: $text) {
+      eventId
+      rawText
+      walletId
+      walletName
+      categoryId
+      categoryName
+      amount
+      currency
+      transactionKind
+      description
+      date
+      confidence
+      requiresConfirmation
+      unresolvedFields
+      validationStatus
+    }
+  }
+`;
+
+export const COMPLETE_AI_TRANSACTION_EVENT_MUTATION = `
+  mutation CompleteAiTransactionEvent($input: CompleteAiTransactionEventInput!) {
+    completeAiTransactionEvent(input: $input)
+  }
+`;

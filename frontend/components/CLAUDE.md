@@ -17,6 +17,12 @@ components/
     └── CreateWalletModal.tsx
 ```
 
+Important transaction-related components currently in use:
+- `transactions/TransactionFormModal.tsx` - manual transaction creation
+- `transactions/AiTransactionPanel.tsx` - natural-language preview entry
+- `transactions/AiTransactionConfirmModal.tsx` - editable confirmation before save
+- `transactions/TransactionList.tsx` - grouped list rendering
+
 ## Hook Pattern (React Query)
 
 ```typescript
@@ -117,10 +123,16 @@ export async function graphqlRequest<T>(options: {
         body: JSON.stringify(options),
     });
     const json = await res.json();
-    if (json.errors) throw new Error(json.errors[0].message);
-    return json.data as T;
+if (json.errors) throw new Error(json.errors[0].message);
+return json.data as T;
 }
 ```
+
+Current implementation detail:
+- the real client now throws a typed error with:
+  - `statusCode`
+  - optional `errorType`
+- AI-related UI should branch on `errorType` instead of parsing raw strings
 
 ## Toast Helpers (`lib/toast.ts`)
 
@@ -131,6 +143,14 @@ export const showSuccessToast = (msg: string) => toast.success(msg);
 export const showErrorToast = (msg: string) => toast.error(msg);
 export const showInfoToast = (msg: string) => toast.info(msg);
 ```
+
+## AI UI Rules
+- AI preview is not a generic chat timeline; it is a guided transaction-capture surface
+- preview and confirmation components must stay bilingual via `aiChat.*` translation keys
+- if AI fails, prefer contextual inline feedback inside the AI panel first
+- final persistence must still go through the normal create mutation and React Query invalidation flow
+- if you touch AI flow wiring, prefer editing `AiTransactionWorkspace.tsx` instead of duplicating state across pages
+- `/chat` keeps a browser-session history only; do not turn it into DB-backed chat history by accident
 
 ## Project Color Classes (Tailwind)
 Use CSS variables for colors - already mapped in `tailwind.config.ts`:

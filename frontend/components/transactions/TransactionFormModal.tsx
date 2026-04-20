@@ -91,7 +91,8 @@ export function TransactionFormModal({
                   value={kind}
                   className="sr-only"
                 />
-                {kind === "EXPENSE" ? `🔴 ${t("txnForm.expense")}` : `🟢 ${t("txnForm.income")}`}
+                <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: kind === "EXPENSE" ? "#dc2626" : "#16a34a" }} />
+                {kind === "EXPENSE" ? t("txnForm.expense") : t("txnForm.income")}
               </label>
             ))}
           </div>

@@ -2,20 +2,21 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useI18n } from "@/components/i18n/I18nProvider";
 import { graphqlRequest } from "@/components/lib/graphql/client";
-import { showSuccess, showError } from "@/components/lib/toast";
+import { showError, showSuccess } from "@/components/lib/toast";
+import { AiTransactionWorkspace } from "@/components/transactions/AiTransactionWorkspace";
 import { TransactionFormModal } from "@/components/transactions/TransactionFormModal";
 import { TransactionList } from "@/components/transactions/TransactionList";
-import { Transaction, Category } from "@/components/transactions/types";
-import { Wallet } from "@/components/wallets/types";
 import {
-  TRANSACTIONS_QUERY,
   CATEGORIES_QUERY,
   CREATE_TRANSACTION_MUTATION,
   DELETE_TRANSACTION_MUTATION,
+  TRANSACTIONS_QUERY,
 } from "@/components/transactions/transactionQueries";
-import { useI18n } from "@/components/i18n/I18nProvider";
+import type { Category, Transaction } from "@/components/transactions/types";
+import type { Wallet } from "@/components/wallets/types";
 
 const WALLET_QUERY = `
   query GetWallet($walletId: UUID!) {
@@ -47,16 +48,20 @@ export default function WalletDetailPage() {
   const { data: catData } = useQuery({
     queryKey: ["categories"],
     queryFn: () => graphqlRequest<{ categories: Category[] }>(CATEGORIES_QUERY),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 5 * 60_000,
   });
 
   const createMutation = useMutation({
     mutationFn: (input: Record<string, unknown>) =>
-      graphqlRequest(CREATE_TRANSACTION_MUTATION, { input, idempotencyKey: crypto.randomUUID() }),
+      graphqlRequest(CREATE_TRANSACTION_MUTATION, {
+        input,
+        idempotencyKey: crypto.randomUUID(),
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transactions", walletId] });
       queryClient.invalidateQueries({ queryKey: ["wallet", walletId] });
       queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardSummary"] });
       showSuccess(t("toast.transactionAdded"));
       setModalOpen(false);
     },
@@ -95,8 +100,14 @@ export default function WalletDetailPage() {
   if (walletLoading) {
     return (
       <div className="space-y-4">
-        <div className="h-8 w-48 rounded animate-pulse" style={{ backgroundColor: "var(--muted)" }} />
-        <div className="h-24 rounded-xl animate-pulse" style={{ backgroundColor: "var(--muted)" }} />
+        <div
+          className="h-8 w-48 rounded animate-pulse"
+          style={{ backgroundColor: "var(--muted)" }}
+        />
+        <div
+          className="h-24 rounded-xl animate-pulse"
+          style={{ backgroundColor: "var(--muted)" }}
+        />
       </div>
     );
   }
@@ -105,7 +116,11 @@ export default function WalletDetailPage() {
     return (
       <div className="text-center py-12">
         <p style={{ color: "var(--foreground)" }}>{t("wallets.notFound")}</p>
-        <button onClick={() => router.push("/wallets")} className="mt-4 text-sm underline" style={{ color: "var(--primary)" }}>
+        <button
+          onClick={() => router.push("/wallets")}
+          className="mt-4 text-sm underline"
+          style={{ color: "var(--primary)" }}
+        >
           {t("wallets.backToWallets")}
         </button>
       </div>
@@ -139,12 +154,18 @@ export default function WalletDetailPage() {
             <h1 className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
               {wallet.name}
             </h1>
-            <p className="text-sm opacity-50 mt-0.5" style={{ color: "var(--foreground)" }}>
+            <p
+              className="text-sm opacity-50 mt-0.5"
+              style={{ color: "var(--foreground)" }}
+            >
               {wallet.currency}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs opacity-50 mb-0.5" style={{ color: "var(--foreground)" }}>
+            <p
+              className="text-xs opacity-50 mb-0.5"
+              style={{ color: "var(--foreground)" }}
+            >
               {t("wallets.balance")}
             </p>
             <p className="text-2xl font-bold" style={{ color: "var(--primary)" }}>
@@ -162,17 +183,31 @@ export default function WalletDetailPage() {
           <button
             onClick={() => setModalOpen(true)}
             className="px-4 py-2 rounded-lg text-sm font-semibold"
-            style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
+            style={{
+              backgroundColor: "var(--primary)",
+              color: "var(--primary-foreground)",
+            }}
           >
             {t("transactions.add")}
           </button>
         )}
       </div>
 
+      {canEdit && (
+        <AiTransactionWorkspace
+          defaultWalletId={wallet.id}
+          defaultWalletCurrency={wallet.currency}
+        />
+      )}
+
       {txnLoading ? (
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-14 rounded-xl animate-pulse" style={{ backgroundColor: "var(--muted)" }} />
+            <div
+              key={i}
+              className="h-14 rounded-xl animate-pulse"
+              style={{ backgroundColor: "var(--muted)" }}
+            />
           ))}
         </div>
       ) : (
@@ -190,7 +225,6 @@ export default function WalletDetailPage() {
         onClose={() => setModalOpen(false)}
         onSubmit={handleFormSubmit}
       />
-
     </div>
   );
 }

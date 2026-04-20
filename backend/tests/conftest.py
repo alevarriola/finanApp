@@ -5,16 +5,17 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from app.auth.auth_info import AuthInfo
 from app.core.config import get_settings
 from app.db.base import Base
-from app.graphql.users.models.user import User
-from app.graphql.users.repositories.user_repository import UserRepository
-from app.graphql.users.services.user_service import UserService
+from app.graphql.ai_chat.models.ai_transaction_event import AiTransactionEvent
 from app.graphql.categories.models.category import Category
 from app.graphql.invitations.models.invitation import Invitation
 from app.graphql.transactions.models.transaction import Transaction
+from app.graphql.users.models.user import User
+from app.graphql.users.repositories.user_repository import UserRepository
+from app.graphql.users.services.user_service import UserService
 from app.graphql.wallets.models.wallet import Wallet
 from app.graphql.wallets.models.wallet_member import WalletMember
 
-_ = (User, Wallet, WalletMember, Category, Transaction, Invitation)
+_ = (User, Wallet, WalletMember, Category, Transaction, Invitation, AiTransactionEvent)
 
 _settings = get_settings()
 TEST_DB_URL = _settings.database_url.rsplit("/", 1)[0] + "/finanapp_test"

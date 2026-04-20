@@ -17,7 +17,7 @@ export function TransactionList({
   currency,
   onDelete,
 }: TransactionListProps) {
-  const { locale } = useI18n();
+  const { t, locale } = useI18n();
   const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]));
 
   if (transactions.length === 0) {
@@ -27,13 +27,13 @@ export function TransactionList({
         style={{ borderColor: "var(--border)" }}
       >
         <p className="text-sm opacity-50" style={{ color: "var(--foreground)" }}>
-          No transactions yet
+          {t("transactions.empty")}
         </p>
       </div>
     );
   }
 
-  const grouped = groupByDate(transactions);
+  const grouped = groupByDate(transactions, locale, t as (key: string) => string);
 
   return (
     <div className="space-y-4">
@@ -65,7 +65,7 @@ export function TransactionList({
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate" style={{ color: "var(--foreground)" }}>
-                      {txn.description ?? (category ? (locale === "es" && category.nameEs ? category.nameEs : category.name) : (isIncome ? "Income" : "Expense"))}
+                      {txn.description ?? (category ? (locale === "es" && category.nameEs ? category.nameEs : category.name) : (isIncome ? t("transactions.income") : t("transactions.expense")))}
                     </p>
                     {category && txn.description && (
                       <p className="text-xs opacity-50 truncate" style={{ color: "var(--foreground)" }}>
@@ -83,7 +83,7 @@ export function TransactionList({
                     onClick={() => onDelete(txn.id)}
                     className="text-xs px-2 py-1 rounded opacity-30 hover:opacity-70 transition-opacity"
                     style={{ color: "var(--foreground)" }}
-                    title="Delete"
+                    title={t("common.delete")}
                   >
                     ✕
                   </button>
@@ -97,23 +97,27 @@ export function TransactionList({
   );
 }
 
-function groupByDate(transactions: Transaction[]) {
+function groupByDate(
+  transactions: Transaction[],
+  locale: string,
+  t: (key: string) => string,
+) {
   const map = new Map<string, Transaction[]>();
   for (const txn of transactions) {
-    const label = formatDateLabel(txn.date);
+    const label = formatDateLabel(txn.date, locale, t);
     if (!map.has(label)) map.set(label, []);
     map.get(label)!.push(txn);
   }
   return Array.from(map.entries()).map(([label, items]) => ({ label, items }));
 }
 
-function formatDateLabel(dateStr: string): string {
+function formatDateLabel(dateStr: string, locale: string, t: (key: string) => string): string {
   const date = new Date(dateStr + "T00:00:00");
   const today = new Date();
   const yesterday = new Date();
   yesterday.setDate(today.getDate() - 1);
 
-  if (date.toDateString() === today.toDateString()) return "Today";
-  if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
-  return date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  if (date.toDateString() === today.toDateString()) return t("transactions.today");
+  if (date.toDateString() === yesterday.toDateString()) return t("transactions.yesterday");
+  return date.toLocaleDateString(locale === "es" ? "es-PY" : "en-US", { month: "long", day: "numeric", year: "numeric" });
 }

@@ -1,0 +1,6 @@
+# AI chat private beta allowlist
+# Add one email per line in your local file:
+#   backend/config/ai_chat_allowed_emails.txt
+#
+# Example:
+# you@example.com

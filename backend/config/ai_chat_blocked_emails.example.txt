@@ -1,0 +1,2 @@
+# One email per line.
+# Add accounts here if you want to block AI chat manually after review.
