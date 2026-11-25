@@ -33,7 +33,10 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    app.include_router(create_graphql_router(container), prefix="/graphql")
+    app.include_router(
+        create_graphql_router(container, enable_ide=settings.environment != "production"),
+        prefix="/graphql",
+    )
 
     @app.get("/api/health")
     def health_check():

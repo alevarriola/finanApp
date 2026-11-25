@@ -20,7 +20,7 @@ frontend/
 │   ├── globals.css          # CSS variables (light + dark) + Tailwind
 │   └── page.tsx             # Landing page
 ├── components/
-│   ├── shared/              # Reusable (PasswordInput, etc.)
+│   ├── shared/              # Reusable (PasswordInput, ServerWakeHint, etc.)
 │   ├── i18n/                # I18nProvider, locales (EN/ES), LanguageSwitcher
 │   ├── layout/              # MobileNav, InstallBanner (PWA)
 │   ├── lib/
@@ -74,7 +74,7 @@ const { t } = useI18n();
 <h1>{t("dashboard.title")}</h1>
 ```
 - Language switcher in the dashboard header
-- Locale persisted in `localStorage("locale")`
+- Locale persisted in `localStorage("locale")` via `useStoredChoice` (`components/lib/useStoredChoice.ts`)
 - Server Components (layout.tsx) can't use `useI18n()` - leave those in English
 
 ## Responsive Layout
@@ -92,7 +92,8 @@ const { t } = useI18n();
 ## Dark Mode
 - Toggle via `[data-theme="dark"]` on `<html>` element
 - CSS variables auto-switch in `globals.css`
-- Persisted in `localStorage("theme")`, loaded in `<head>` script to prevent flash
+- Persisted in `localStorage("theme")` via `useStoredChoice`, applied by the `<head>` script to prevent flash
+- Read browser-only state with `useSyncExternalStore` (or `useStoredChoice`), never by calling `setState` inside `useEffect`: the `react-hooks/set-state-in-effect` lint rule is an error
 - Settings page provides Light/Dark toggle
 
 ## Component Rules

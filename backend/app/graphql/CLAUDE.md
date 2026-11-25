@@ -121,7 +121,7 @@ class Mutation(AuthMutations, WalletMutations, NewModuleMutations):
 | `categories` | 4 | Done - global defaults + per-user, no icon field |
 | `invitations` | 5 | Done - invite, accept, reject, cancel; received/sent queries |
 | `reports` | 6 | Done - dashboardSummary with period/wallet/category filters |
-| `ai_chat` | 8 | In progress but functional - natural-language transaction preview + confirmation flow |
+| `ai_chat` | 8 | Done - natural-language transaction preview + confirmation flow (feature-flagged private beta) |
 
 ## `ai_chat` Notes
 

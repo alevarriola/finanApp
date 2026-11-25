@@ -165,6 +165,8 @@ if idempotency_key:
 - **Neon**: PostgreSQL (`production` branch for the deploy, `dev` branch for local work)
 - **Upstash**: Redis over TLS (`rediss://`)
 - **Dockerfile**: Python 3.13 + uv, runs `alembic upgrade head` on startup
+- **.dockerignore**: keeps `.env`, real AI allow/block lists, `.venv` and tests out of the image
+- GraphiQL is served only when `ENVIRONMENT` is not `production` (`create_graphql_router(..., enable_ide=...)`)
 - Environment variables set in the Render dashboard
 
 ## SQLAlchemy + MappedAsDataclass Warning

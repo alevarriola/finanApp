@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Download, X } from "lucide-react";
 import { useI18n } from "@/components/i18n/I18nProvider";
 
@@ -9,20 +9,35 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+const DISMISSED_KEY = "pwa-dismissed";
+
+function isStandalone() {
+  return window.matchMedia("(display-mode: standalone)").matches;
+}
+
+function wasDismissedThisSession() {
+  return sessionStorage.getItem(DISMISSED_KEY) !== null;
+}
+
+// These browser facts don't change while the page is open, so there is nothing to subscribe to.
+function subscribeNever() {
+  return () => {};
+}
+
+// iOS Safari has no install prompt, so we show manual instructions instead.
+function getIOSHintSnapshot() {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  return isIOS && !isStandalone() && !wasDismissedThisSession();
+}
+
 export function InstallBanner() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [showIOSHint, setShowIOSHint] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const isIOSHintEligible = useSyncExternalStore(subscribeNever, getIOSHintSnapshot, () => false);
+  const showIOSHint = isIOSHintEligible && !dismissed;
 
   useEffect(() => {
-    // Don't show if already installed as PWA
-    if (window.matchMedia("(display-mode: standalone)").matches) return;
-
-    // Don't show if user dismissed before (this session)
-    if (sessionStorage.getItem("pwa-dismissed")) {
-      setDismissed(true);
-      return;
-    }
+    if (isStandalone() || wasDismissedThisSession()) return;
 
     // Android/Chrome: capture the install prompt
     const handler = (e: Event) => {
@@ -30,13 +45,6 @@ export function InstallBanner() {
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
     window.addEventListener("beforeinstallprompt", handler);
-
-    // iOS: detect Safari on iPhone/iPad
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-    if (isIOS && !isStandalone) {
-      setShowIOSHint(true);
-    }
 
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
@@ -53,8 +61,7 @@ export function InstallBanner() {
   function handleDismiss() {
     setDismissed(true);
     setDeferredPrompt(null);
-    setShowIOSHint(false);
-    sessionStorage.setItem("pwa-dismissed", "1");
+    sessionStorage.setItem(DISMISSED_KEY, "1");
   }
 
   const { t } = useI18n();
