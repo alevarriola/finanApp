@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, X, Share } from "lucide-react";
+import { Download, X } from "lucide-react";
 import { useI18n } from "@/components/i18n/I18nProvider";
 
 interface BeforeInstallPromptEvent extends Event {

@@ -15,7 +15,7 @@ Personal finance app. Track wallets, record income and expenses, share accounts 
 | Database | PostgreSQL 16, Redis 7 |
 | Auth | JWT HS256, access token 24h, refresh token 7d, HttpOnly cookies |
 | Email | Resend (noreply@kash-py.com) |
-| Deploy | Railway (backend + DB + Redis), Vercel (frontend), Cloudflare (DNS) |
+| Deploy | Render (backend, Docker), Neon (PostgreSQL), Upstash (Redis), Vercel (frontend), Cloudflare (DNS) |
 | PWA | manifest.json + service worker, installable on mobile |
 
 ---
@@ -58,6 +58,7 @@ GraphiQL: http://localhost:8000/graphql
 ### 3. Frontend
 
 ```bash
+corepack enable pnpm
 cd frontend
 cp .env.local.example .env.local
 pnpm install
@@ -91,7 +92,6 @@ finanApp/
 │   ├── app/                 # Next.js pages (auth, dashboard, wallets, etc.)
 │   ├── components/          # React components, hooks, i18n, GraphQL client
 │   └── public/              # PWA manifest, icons, service worker
-├── ROADMAP.md               # Phase plan (1-8)
 └── docker-compose.yml       # PostgreSQL + Redis
 ```
 
@@ -107,8 +107,8 @@ finanApp/
 | 4. Transactions and categories | Done |
 | 5. Shared wallets and invitations | Done |
 | 6. Dashboard and reports | Done |
-| 7. Production deploy | Done (Railway + Vercel + Cloudflare) |
-| 8. AI chat (planned) | See ROADMAP.md |
+| 7. Production deploy | Done (originally Railway; migrated to Render + Neon + Upstash free tiers) |
+| 8. AI chat (natural-language transaction capture) | Done (behind feature flag + email allowlist) |
 
 ---
 
@@ -126,6 +126,19 @@ finanApp/
 | `FRONTEND_URL` | Frontend URL for email links |
 | `ENVIRONMENT` | dev / staging / production |
 | `CORS_ORIGINS` | JSON array of allowed origins |
+
+## Database Branching (Neon)
+
+Postgres runs on [Neon](https://neon.tech) with two branches:
+
+| Branch | Used by |
+|---|---|
+| `production` | Deployed backend on Render |
+| `dev` | Local development (child of `production`) |
+
+New migrations are applied to `dev` first (`uv run alembic upgrade head` locally). `production` is only migrated by the deployed backend, whose Docker image runs `alembic upgrade head` on startup after a merge to `main`.
+
+Neon connection strings must be adapted for asyncpg: use the `postgresql+asyncpg://` scheme and replace `sslmode`/`channel_binding` with `?ssl=require`.
 
 ### Frontend (`frontend/.env.local`)
 

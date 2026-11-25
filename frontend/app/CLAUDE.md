@@ -14,7 +14,6 @@ app/
 │
 ├── (dashboard)/                  # JWT-protected group
 │   ├── layout.tsx                # DashboardShell: sidebar + topbar
-│   ├── page.tsx                  # Redirect to /dashboard
 │   ├── dashboard/page.tsx        # Dashboard: stats, charts, filters (Recharts)
 │   ├── chat/page.tsx             # Dedicated AI workspace + session history
 │   ├── wallets/page.tsx          # Wallets list
@@ -51,16 +50,27 @@ export default function WalletsPage() {
 }
 ```
 
-## Auth Middleware
+## Auth Proxy
 
-File: `middleware.ts` (at the root of `frontend/`)
+File: `proxy.ts` (at the root of `frontend/`; Next 16 renamed `middleware` to `proxy`)
 
 ```typescript
-// Protected routes: redirects to /sign-in if no JWT cookie
+// Protected routes: redirects to /sign-in if no JWT cookie.
+// Route groups like (dashboard) are not part of the URL, so every
+// protected top-level path must be listed explicitly.
 export const config = {
-    matcher: ["/(dashboard)/:path*"],
+    matcher: [
+        "/dashboard/:path*",
+        "/wallets/:path*",
+        "/transactions/:path*",
+        "/sharing/:path*",
+        "/settings/:path*",
+        "/chat/:path*",
+    ],
 };
 ```
+
+When adding a new page under `(dashboard)/`, add its path to the matcher.
 
 ## API Routes
 

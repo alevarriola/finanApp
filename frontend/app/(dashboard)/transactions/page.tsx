@@ -106,8 +106,6 @@ export default function TransactionsPage() {
     grouped.get(label)!.push(txn);
   }
 
-  const selectedWallet = wallets.find((w) => w.id === walletId);
-  const currency = selectedWallet?.currency ?? wallets[0]?.currency ?? "PYG";
 
   const selectStyle = {
     backgroundColor: "var(--card)",
