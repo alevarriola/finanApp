@@ -6,6 +6,10 @@ Personal finance app for tracking wallets, income and expenses, sharing accounts
 
 > The backend runs on a free instance that sleeps when idle, so the first request after a while can take 30–60 seconds while it wakes up.
 
+| Landing | Dashboard | Sign up |
+|---|---|---|
+| ![Landing page](docs/screenshots/landing.png) | ![Dashboard](docs/screenshots/dashboard.png) | ![Sign up](docs/screenshots/sign-up.png) |
+
 ---
 
 ## Features
@@ -91,7 +95,7 @@ uv run alembic upgrade head
 uv run uvicorn app.api.app:create_app --factory --reload --port 8000
 ```
 
-GraphiQL: http://localhost:8000/graphql
+GraphiQL: http://localhost:8000/graphql (disabled when `ENVIRONMENT=production`)
 
 ### 3. Frontend
 

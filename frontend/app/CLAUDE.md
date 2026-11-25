@@ -30,8 +30,7 @@ app/
     └── auth/
         ├── login/route.ts        # POST: validates credentials, sets JWT cookies
         ├── logout/route.ts       # POST: clears cookies, redirects to /
-        ├── resend-verification/  # POST: resends verification email
-        └── refresh/route.ts      # POST: renews access token
+        └── resend-verification/  # POST: resends verification email
 ```
 
 ## Page Pattern

@@ -4,12 +4,13 @@
 
 ```
 components/
-├── shared/          # Reusable across the whole app
-├── ui/              # Wrapped Radix UI primitives
-├── hooks/           # React Query custom hooks
+├── shared/          # Reusable across the whole app (PasswordInput, ServerWakeHint)
+├── layout/          # SidebarNav, MobileNav, InstallBanner
+├── i18n/            # I18nProvider, locales, LanguageSwitcher
 ├── lib/
 │   ├── graphql/     # GraphQL client
-│   └── toast.ts     # Toast helpers
+│   ├── toast.ts     # Toast helpers
+│   └── useStoredChoice.ts  # localStorage-backed choice (theme, locale) via useSyncExternalStore
 ├── providers/       # Context providers
 └── [module]/        # Domain-specific components
     ├── WalletsContent.tsx
@@ -24,6 +25,10 @@ Important transaction-related components currently in use:
 - `transactions/TransactionList.tsx` - grouped list rendering
 
 ## Hook Pattern (React Query)
+
+Current code keeps GraphQL documents in `<module>/<module>Queries.ts` (for example `wallets/walletQueries.ts`)
+and calls `useQuery`/`useMutation` inside the content components. The example below is the target pattern
+if a module grows enough to need extracted hooks; there is no `components/hooks/` folder yet.
 
 ```typescript
 // hooks/useWallets.ts
