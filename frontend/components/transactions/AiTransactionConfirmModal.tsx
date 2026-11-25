@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import type { TranslationKey } from "@/components/i18n/locales";
@@ -47,7 +47,7 @@ export function AiTransactionConfirmModal({
     handleSubmit,
     reset,
     setValue,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -61,8 +61,8 @@ export function AiTransactionConfirmModal({
     },
   });
 
-  const selectedKind = watch("transactionKind");
-  const selectedCategoryId = watch("categoryId");
+  const selectedKind = useWatch({ control, name: "transactionKind" });
+  const selectedCategoryId = useWatch({ control, name: "categoryId" });
   const filteredCategories = categories.filter((category) => category.categoryKind === selectedKind);
   const editableWallets = wallets.filter(
     (wallet) => wallet.myRole === "OWNER" || wallet.myRole === "EDITOR"

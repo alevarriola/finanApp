@@ -158,12 +158,14 @@ if idempotency_key:
 
 ## Settings Auto-Fix
 - `Settings.fix_database_url` validator auto-converts `postgresql://` to `postgresql+asyncpg://`
-- This allows Railway's `DATABASE_URL` reference to work without manual editing
+- Neon connection strings still need `sslmode`/`channel_binding` replaced with `?ssl=require` (asyncpg rejects them)
 
 ## Deploy
-- **Railway**: backend + PostgreSQL + Redis (auto-deploy from GitHub main branch)
+- **Render**: backend web service, Docker, root `backend/` (auto-deploy from GitHub main branch)
+- **Neon**: PostgreSQL (`production` branch for the deploy, `dev` branch for local work)
+- **Upstash**: Redis over TLS (`rediss://`)
 - **Dockerfile**: Python 3.13 + uv, runs `alembic upgrade head` on startup
-- Environment variables set in Railway dashboard
+- Environment variables set in the Render dashboard
 
 ## SQLAlchemy + MappedAsDataclass Warning
 - NEVER use `from __future__ import annotations` in model files

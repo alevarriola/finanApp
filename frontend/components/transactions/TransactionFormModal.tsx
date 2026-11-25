@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useI18n } from "@/components/i18n/I18nProvider";
@@ -36,7 +36,7 @@ export function TransactionFormModal({
     register,
     handleSubmit,
     reset,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -47,7 +47,7 @@ export function TransactionFormModal({
     },
   });
 
-  const selectedKind = watch("transactionKind");
+  const selectedKind = useWatch({ control, name: "transactionKind" });
   const filteredCategories = categories.filter((c) => c.categoryKind === selectedKind);
 
   useEffect(() => {
