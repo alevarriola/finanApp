@@ -8,8 +8,6 @@ export default defineConfig([
   {
     rules: {
       "@typescript-eslint/no-unused-vars": ["warn", { ignoreRestSiblings: true }],
-      // TODO: localStorage/searchParams sync effects need a useSyncExternalStore refactor.
-      "react-hooks/set-state-in-effect": "warn",
     },
   },
   globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "public/sw.js"]),
