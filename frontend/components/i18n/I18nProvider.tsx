@@ -1,7 +1,10 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { createContext, useContext, useCallback } from "react";
+import { useStoredChoice } from "@/components/lib/useStoredChoice";
 import { type Locale, type TranslationKey, locales } from "./locales";
+
+const LOCALES: readonly Locale[] = ["en", "es"];
 
 interface I18nContextType {
   locale: Locale;
@@ -16,19 +19,7 @@ const I18nContext = createContext<I18nContextType>({
 });
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
-
-  useEffect(() => {
-    const saved = localStorage.getItem("locale") as Locale | null;
-    if (saved && (saved === "en" || saved === "es")) {
-      setLocaleState(saved);
-    }
-  }, []);
-
-  const setLocale = useCallback((newLocale: Locale) => {
-    setLocaleState(newLocale);
-    localStorage.setItem("locale", newLocale);
-  }, []);
+  const [locale, setLocale] = useStoredChoice("locale", LOCALES, "en");
 
   const t = useCallback(
     (key: TranslationKey): string => {

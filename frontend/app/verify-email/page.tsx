@@ -16,18 +16,20 @@ export default function VerifyEmailPage() {
   );
 }
 
+interface VerifyResult {
+  status: "success" | "error";
+  message: string;
+}
+
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
-  const [message, setMessage] = useState("");
+  const [result, setResult] = useState<VerifyResult | null>(null);
+  const status = token ? (result?.status ?? "loading") : "error";
+  const message = token ? (result?.message ?? "") : "Missing verification token.";
 
   useEffect(() => {
-    if (!token) {
-      setStatus("error");
-      setMessage("Missing verification token.");
-      return;
-    }
+    if (!token) return;
 
     async function verify() {
       try {
@@ -41,14 +43,12 @@ function VerifyEmailContent() {
         });
         const json = await res.json();
         if (json.errors?.length) {
-          setStatus("error");
-          setMessage(json.errors[0].message);
+          setResult({ status: "error", message: json.errors[0].message });
         } else {
-          setStatus("success");
+          setResult({ status: "success", message: "" });
         }
       } catch {
-        setStatus("error");
-        setMessage("Something went wrong. Please try again.");
+        setResult({ status: "error", message: "Something went wrong. Please try again." });
       }
     }
 

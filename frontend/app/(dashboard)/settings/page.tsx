@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "@/components/lib/graphql/client";
+import { useStoredChoice } from "@/components/lib/useStoredChoice";
 import { showSuccess, showError } from "@/components/lib/toast";
 import { useI18n } from "@/components/i18n/I18nProvider";
 
@@ -27,20 +28,16 @@ interface User {
   createdAt: string;
 }
 
+type Theme = "light" | "dark";
+const THEMES: readonly Theme[] = ["light", "dark"];
+
+// The initial data-theme attribute is applied by the inline script in app/layout.tsx.
 function useTheme() {
-  const [theme, setThemeState] = useState<"light" | "dark">("light");
+  const [theme, storeTheme] = useStoredChoice("theme", THEMES, "light");
 
-  useEffect(() => {
-    const stored = localStorage.getItem("theme") as "light" | "dark" | null;
-    const initial = stored ?? "light";
-    setThemeState(initial);
-    document.documentElement.setAttribute("data-theme", initial);
-  }, []);
-
-  function setTheme(t: "light" | "dark") {
-    setThemeState(t);
-    localStorage.setItem("theme", t);
-    document.documentElement.setAttribute("data-theme", t);
+  function setTheme(next: Theme) {
+    document.documentElement.setAttribute("data-theme", next);
+    storeTheme(next);
   }
 
   return { theme, setTheme };
@@ -56,14 +53,12 @@ export default function SettingsPage() {
     queryFn: () => graphqlRequest<{ me: User }>(ME_QUERY),
   });
 
-  const [name, setName] = useState("");
+  // null until the user edits the field, so it shows the loaded name by default.
+  const [nameDraft, setNameDraft] = useState<string | null>(null);
+  const name = nameDraft ?? meData?.me.name ?? "";
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
-  useEffect(() => {
-    if (meData?.me) setName(meData.me.name);
-  }, [meData]);
 
   const profileMutation = useMutation({
     mutationFn: (newName: string) =>
@@ -164,7 +159,7 @@ export default function SettingsPage() {
             <input
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setNameDraft(e.target.value)}
               className="w-full text-sm rounded-lg border px-3 py-2 outline-none focus:ring-1"
               style={inputStyle}
             />
