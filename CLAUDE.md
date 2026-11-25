@@ -38,7 +38,9 @@ finanApp/
 - Foreground: `#151613` (near black) / dark: `#e4e4e7`
 
 ## Deploy
-- Backend: Railway (auto-deploy from GitHub `main` branch)
+- Backend: Render Free web service, Docker, root `backend/` (auto-deploy from GitHub `main` branch)
+- Database: Neon Postgres (`production` branch for deploys, `dev` branch for local work)
+- Redis: Upstash (TLS, `rediss://`)
 - Frontend: Vercel (auto-deploy from GitHub `main` branch)
 - DNS: Cloudflare (kash-py.com)
 - Email: Resend (noreply@kash-py.com, domain verified)

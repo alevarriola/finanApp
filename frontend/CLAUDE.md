@@ -32,7 +32,7 @@ frontend/
 │   ├── transactions/        # Manual form + AI preview/confirm components, types, queries
 │   └── invitations/         # InvitationsSection, WalletMembersSection, types, queries
 ├── public/                  # PWA: manifest.json, sw.js, logo.svg, icons
-└── middleware.ts             # JWT route protection
+└── proxy.ts                  # JWT route protection (Next 16 proxy, formerly middleware)
 ```
 
 ## Commands
@@ -41,6 +41,7 @@ cd frontend
 pnpm install
 pnpm dev       # Port 3000
 pnpm build     # Production build
+pnpm lint      # ESLint (flat config in eslint.config.mjs)
 ```
 
 ## Environment Variables (`.env.local`)

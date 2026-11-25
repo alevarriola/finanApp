@@ -55,7 +55,7 @@ export default function SignUpPage() {
 
   async function onSubmit(values: FormValues) {
     try {
-      const { confirmPassword: _, ...input } = values;
+      const { confirmPassword, ...input } = values;
       const data = await graphqlRequest<RegisterData>(REGISTER_MUTATION, {
         input,
       });
