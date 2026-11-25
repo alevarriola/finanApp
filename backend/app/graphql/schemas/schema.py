@@ -44,7 +44,11 @@ class Mutation(
     pass
 
 
-def create_graphql_router(container: aioinject.Container) -> GraphQLRouter:
+def create_graphql_router(
+    container: aioinject.Container,
+    *,
+    enable_ide: bool,
+) -> GraphQLRouter:
     schema = strawberry.Schema(
         query=Query,
         mutation=Mutation,
@@ -53,4 +57,4 @@ def create_graphql_router(container: aioinject.Container) -> GraphQLRouter:
             GraphQLAuthMiddleware,
         ],
     )
-    return GraphQLRouter(schema, graphql_ide="graphiql")
+    return GraphQLRouter(schema, graphql_ide="graphiql" if enable_ide else None)
