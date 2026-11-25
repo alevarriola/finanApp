@@ -26,6 +26,7 @@ app/
 │
 └── api/
     ├── backend/route.ts          # Proxy -> backend GraphQL (POST)
+    ├── wake/route.ts             # GET: pings backend /api/health to wake the free Render instance
     └── auth/
         ├── login/route.ts        # POST: validates credentials, sets JWT cookies
         ├── logout/route.ts       # POST: clears cookies, redirects to /
@@ -83,6 +84,11 @@ When adding a new page under `(dashboard)/`, add its path to the matcher.
 - `POST /api/auth/login` - validates with backend, sets HttpOnly cookies
 - `POST /api/auth/logout` - clears cookies, redirects to `/` using `request.url`
 - `POST /api/auth/resend-verification` - resends email verification, redirects to `/dashboard`
+
+### Wake Route (`/api/wake`)
+- `GET` pings the backend health check (up to 60 s) so a sleeping free instance starts booting
+- Called by `ServerWakeHint` (rendered in `(auth)/layout.tsx`) as soon as sign-in or sign-up opens
+- The hint only appears if the ping takes longer than 2.5 s (a cold start)
 
 **Important:** Never hardcode `localhost` in redirect URLs. Always use `new URL("/path", request.url)`.
 

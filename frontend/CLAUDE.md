@@ -20,7 +20,7 @@ frontend/
 │   ├── globals.css          # CSS variables (light + dark) + Tailwind
 │   └── page.tsx             # Landing page
 ├── components/
-│   ├── shared/              # Reusable (PasswordInput, etc.)
+│   ├── shared/              # Reusable (PasswordInput, ServerWakeHint, etc.)
 │   ├── i18n/                # I18nProvider, locales (EN/ES), LanguageSwitcher
 │   ├── layout/              # MobileNav, InstallBanner (PWA)
 │   ├── lib/

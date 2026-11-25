@@ -1,6 +1,7 @@
 "use client";
 
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
+import { ServerWakeHint } from "@/components/shared/ServerWakeHint";
 
 export default function AuthLayout({
   children,
@@ -14,6 +15,7 @@ export default function AuthLayout({
     >
       <div className="w-full max-w-md px-4">
         <div className="flex justify-end mb-4"><LanguageSwitcher /></div>
+        <ServerWakeHint />
         {children}
       </div>
     </div>
